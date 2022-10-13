@@ -96,10 +96,10 @@ def PoC(capture, cam_res):
 
     obj_actual_heights = [None, None, 4.3, 15, 7, 4.5] # cm. Wall and floor, sample, obstacle, rock, lander
 
-    # Setup camera undistort coefficients:
-    mtx, distortion = load_coefficients('calibration_charuco.yml')
-    newcameramtx, dist_roi = cv.getOptimalNewCameraMatrix(mtx, distortion, (f_width,f_height), 0, (f_width,f_height))
-    mapx, mapy = cv.initUndistortRectifyMap(mtx, distortion, None, newcameramtx, (f_width,f_height), 5)
+    # # Setup camera undistort coefficients:
+    # mtx, distortion = load_coefficients('calibration_charuco.yml')
+    # newcameramtx, dist_roi = cv.getOptimalNewCameraMatrix(mtx, distortion, (f_width,f_height), 0, (f_width,f_height))
+    # mapx, mapy = cv.initUndistortRectifyMap(mtx, distortion, None, newcameramtx, (f_width,f_height), 5)
 
     num_classes = 6 # Wall and floor, sample, obstacle, rock, lander
 
