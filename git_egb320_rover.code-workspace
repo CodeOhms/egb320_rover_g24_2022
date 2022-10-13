@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "RPi:~/programming/egb320_rover_g24_2022",
+			"uri": "ponyssh:/RPi/~/programming/egb320_rover_g24_2022"
+		}
+	],
+	"settings": {}
+}
