@@ -66,6 +66,8 @@ def init_sync_impl(cam_res):
     video_stream = copy.copy(vid_s)
     frame_queue = f_fifo_q
     vision_queue = vis_fifo_q
+    bearings_q = SimpleQueue()
+    distances_q = SimpleQueue()
 
     # Setup display windows:
     cv.namedWindow("Frame")
@@ -94,7 +96,7 @@ def init_sync_impl(cam_res):
     cv.moveWindow("Lander conv. hulls", f_width*f_scale*3, f_height+win_y_offset)
     cv.moveWindow("Debug message", 0, f_height*(1+f_scale)+win_y_offset*2)
 
-    return (vid_s, f_fifo_q, vis_fifo_q)
+    return (vid_s, f_fifo_q, vis_fifo_q, bearings_q, distances_q)
 
 def start_sync_impl(video_stream):
     '''
@@ -108,37 +110,33 @@ def close_sync_impl(video_stream):
     video_stream.stop()
     cv.destroyAllWindows()
 
-# def write_data_sync_impl():
-#     pass
-
 def get_frame_sync_impl(f_q):
     global video_stream
     global vision_queue
+    global bearings_q
+    global distances_q
 
     frame = get_frame(video_stream)
     f_q.put(frame) # Put on queue so that it can be processed later,
                    # and viewed immediately as it is also returned!
     
     # This will only ever be called from the synchronous version!
-    # Parallel version will start parallel exectution with the start
+    # Parallel version will start run in parallel with the start
     # command.
     overlays, bearings, distances = _vision_sys_sync_impl()
     vision_queue.put(overlays)
-    # bearings_q.put(bearings)
-    # distances_q.put(distances)
+    bearings_q.put(bearings)
+    distances_q.put(distances)
 
     return frame
 
 def display_frame_sync_impl(frame):
     ret = True
-
     cv.imshow('Frame', frame)
-    
     key = cv.waitKey(1) & 0xFF
     #if the `q` key was pressed, break from the loop
     if key == ord("q"):
         ret = False
-    
     return ret
 
 def get_overlays_sync_impl(vis_q):
@@ -146,18 +144,22 @@ def get_overlays_sync_impl(vis_q):
 
 def display_overlays_sync_impl(overlays):
     ret = True
-
     cv.imshow("Sample conv. hulls", overlays[2])
     cv.imshow("Obstacle conv. hulls", overlays[3])
     cv.imshow("Rock conv. hulls", overlays[4])
     cv.imshow("Lander conv. hulls", overlays[5])
-    
     key = cv.waitKey(1) & 0xFF
     #if the `q` key was pressed, break from the loop
     if key == ord("q"):
         ret = False
-
     return ret
+
+def get_bearings_sync_impl(bears_q):
+    return bears_q.get()
+
+def get_distances_sync_impl(dists_q):
+    return dists_q.get()
+
 
 def superpx_slic_trans(img, num_regions=40):
     slic = Slic(num_components=num_regions, compactness=10, min_size_factor=0) # Supposedly gets FPS increase, but I don't see any...

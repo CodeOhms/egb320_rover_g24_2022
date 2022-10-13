@@ -23,3 +23,9 @@ def get_overlays_impl(vis_q):
 
 def display_overlays_impl(overlays):
     return display_overlays_sync_impl(overlays)
+
+def get_bearings_impl(bears_q):
+    return get_bearings_sync_impl(bears_q)
+
+def get_distances_impl(dists_q):
+    return get_distances_sync_impl(dists_q)

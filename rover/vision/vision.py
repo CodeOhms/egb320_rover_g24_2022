@@ -5,6 +5,7 @@ video_stream = None
 frame_queue = None
 vision_queue = None
 
+
 def init(cam_res=(64, 32)):
     global video_stream
     global frame_queue
@@ -43,8 +44,8 @@ def get_overlays():
 def display_overlays(overlays):
     return impl.display_overlays_impl(overlays)
 
-def get_bearings():
-    pass
+def get_bearings(bears_q):
+    return impl.get_bearings_impl(bears_q)
 
-def get_distances():
-    pass
+def get_distances(dists_q):
+    return impl.get_distances_impl(dists_q)
