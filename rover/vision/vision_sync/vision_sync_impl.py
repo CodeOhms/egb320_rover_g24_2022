@@ -10,6 +10,8 @@ from vision.camera_input.cam_input import *
 video_stream = None
 frame_queue = None
 vision_queue = None
+bearings_q = None
+distances_q = None
 
 f_scale = 4
 f_height, f_width = (0, 0)
@@ -53,6 +55,8 @@ def init_sync_impl(cam_res):
     global vision_queue
     global res_ver_scale
     global regions_properties
+    global bearings_q
+    global distances_q
 
     f_height, f_width = (cam_res[1], cam_res[0])
     res_ver_scale = 2464/f_height
@@ -98,13 +102,13 @@ def init_sync_impl(cam_res):
 
     return (vid_s, f_fifo_q, vis_fifo_q, bearings_q, distances_q)
 
-def start_sync_impl(video_stream):
+def start_sync_impl(video_stream, iso):
     '''
     Implement the vision system synchronously (single-threaded). It will also
     use the shared FIFO buffer for the as the parallel implementations.
     '''
     
-    return camera_start(video_stream)
+    return camera_start(video_stream, iso)
 
 def close_sync_impl(video_stream):
     video_stream.stop()

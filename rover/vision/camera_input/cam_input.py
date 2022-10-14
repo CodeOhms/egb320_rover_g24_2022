@@ -5,7 +5,7 @@ def init_video_stream(cam_res):
     # Vertical res must be multiple of 16, and horizontal a multiple of 32.
     return VideoStream(usePiCamera=True, resolution=cam_res, rotation=180)
 
-def camera_start(video_stream):
+def camera_start(video_stream, iso):
 # https://picamera.readthedocs.io/en/release-1.13/recipes1.html#capturing-consistent-images
     
     print("Camera warming up...")
@@ -14,7 +14,7 @@ def camera_start(video_stream):
     camera = video_stream.stream.camera
 
     # Set ISO to the desired value
-    camera.iso = 900
+    camera.iso = iso
 
     # Wait for the automatic gain control to settle
     time.sleep(2)

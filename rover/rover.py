@@ -13,8 +13,18 @@ def rover_loop():
     # Display information from the vision system:
     frame = vis.get_frame()
     frame_ovs = vis.get_overlays()
+    
     if not vis.display_frame(frame) or not vis.display_overlays(frame_ovs):
+        # Display window was closed! Shutdown application.
         ret = False
+    
+    print('Bearings:')
+    print(vis.get_bearings())
+    print()
+    print('Distances:')
+    print(vis.get_distances())
+    print()
+    print()
 
     return ret
 
