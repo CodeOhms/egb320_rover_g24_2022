@@ -1,5 +1,5 @@
 from vision import vision as vis
-# from navigation import navigation as nav
+from navigation import navigation as nav
 
 def rover_loop():
     ret = True
@@ -18,13 +18,13 @@ def rover_loop():
         # Display window was closed! Shutdown application.
         ret = False
     
-    print('Bearings:')
-    print(vis.get_bearings())
-    print()
-    print('Distances:')
-    print(vis.get_distances())
-    print()
-    print()
+    # print('Bearings:')
+    # print(vis.get_bearings())
+    # print()
+    # print('Distances:')
+    # print(vis.get_distances())
+    # print()
+    # print()
 
     return ret
 
@@ -37,10 +37,10 @@ if __name__ == "__main__":
     print()
 
     vis.init()
-    # nav.init()
+    nav.init()
     # Setup display windows:
 
-    vis.start()
+    vis.start(1200)
 
     while(True):
         if not rover_loop():

@@ -1,4 +1,3 @@
-from vision.camera_input.cam_input import init_video_stream
 import vision.vision_impl as impl
 
 video_stream = None
@@ -16,7 +15,7 @@ def init(cam_res=(64, 32)):
     
     video_stream, frame_queue, vision_queue, bearings_q, distances_q = impl.init_impl(cam_res)
 
-def start(iso=1200):
+def start(iso=900):
     global video_stream
     video_stream = impl.start_impl(video_stream, iso)
 
