@@ -11,7 +11,9 @@ def init_sync_impl():
     nav_smachine = NavSMachine(nav_smachine_impl)
 
     print(nav_smachine.current_state)
-    nav_smachine.begin()
+    nav_smachine.init()
+    print(nav_smachine.current_state)
+    nav_smachine.start()
     print(nav_smachine.current_state)
     nav_smachine.approach_target()
     print(nav_smachine.current_state)
@@ -32,6 +34,7 @@ def start_sync_impl():
     pass
 
 def close_sync_impl():
+    # global nav_smachine
     pass
 
 def get_decision_sync_impl():
@@ -39,9 +42,12 @@ def get_decision_sync_impl():
 
 # State machine functions implementations:
 class NavSMachine_impl:
+    def close(self):
+        pass
+
     # Functions run on transistions:
-    def on_begin(self):
-        print('Begin state machine!')
+    def on_start(self):
+        print('Starting navigation state machine...')
         print()
     
     def on_approach_target(self):
@@ -69,6 +75,13 @@ class NavSMachine_impl:
         pass
 
     # Functions run on state entry:
+    def on_enter_initialising(self):
+        print('Initialising navigation state machine...')
+        print()
+        
+        print('Navigation state machine READY!')
+        print()
+    
     def on_enter_approach(self):
         pass
     
@@ -76,8 +89,17 @@ class NavSMachine_impl:
         '''
         Clean up after navigation state machine.
         '''
-        pass
+        print('Closing down navigation state machine...')
+        print()
 
     # Function run on state exit:
+    def on_exit_initialising(self):
+        print('Navigation state machine RUNNING!')
+        print()
+    
     def on_exit_approach(self):
         pass
+    
+    def on_exit_done(self):
+        print('Navigation state machine CLOSED!')
+        print()

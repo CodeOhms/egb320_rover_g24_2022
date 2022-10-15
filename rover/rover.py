@@ -46,7 +46,7 @@ if __name__ == "__main__":
         if not rover_loop():
             break
 
-    print('Closing robot application.')
+    print('Closing robot application...')
     print()
 
     # Clean up:

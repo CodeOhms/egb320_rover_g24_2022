@@ -1,8 +1,8 @@
 from statemachine import StateMachine, State
-# import copy
 
 class NavSMachine(StateMachine):
-    start = State('Start', initial=True)
+    off = State('Uninitialised', initial=True)
+    initialising = State('Initialising')
     find = State('Find')
     approach = State('Approach')
     collect = State('Collect sample')
@@ -11,7 +11,8 @@ class NavSMachine(StateMachine):
     done = State('Done')
 
     # State transistions:
-    begin = start.to(find)
+    init = off.to(initialising)
+    start = initialising.to(find)
     approach_target = find.to(approach)
     obtain_sample = approach.to(collect)
     find_lander = collect.to(find)
@@ -22,13 +23,19 @@ class NavSMachine(StateMachine):
     finish = find.to(done)
 
     def __init__(self, func_impls):
-        # self.func_impls = copy.deepcopy(func_impls)
         self.func_impls = func_impls
         super().__init__()
+    
+    def close(self):
+        '''
+        Signal code called by the state machine to close
+        and go to the machine's final state.
+        '''
+        self.func_impls.close()
 
     # Functions run on transistions:
-    def on_begin(self):
-        self.func_impls.on_begin()
+    def on_start(self):
+        self.func_impls.on_start()
     
     def on_approach_target(self):
         pass
@@ -55,6 +62,9 @@ class NavSMachine(StateMachine):
         pass
 
     # Functions run on state entry:
+    def on_enter_initialising(self):
+        self.func_impls.on_enter_initialising()
+    
     def on_enter_approach(self):
         pass
     
@@ -62,8 +72,14 @@ class NavSMachine(StateMachine):
         '''
         Clean up after navigation state machine.
         '''
-        pass
+        self.func_impls.on_enter_done()
 
     # Function run on state exit:
+    def on_exit_initialising(self):
+        self.func_impls.on_exit_initialising()
+    
     def on_exit_approach(self):
         pass
+    
+    def on_exit_done(self):
+        self.func_impls.on_exit_done()
