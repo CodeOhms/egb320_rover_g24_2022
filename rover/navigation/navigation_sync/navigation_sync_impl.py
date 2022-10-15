@@ -72,10 +72,10 @@ class NavSMachine_impl:
         print()
         bearings = vis_get_bearings
         while bearings[2][0] != None:
-            movement = (['left_f', 40], ['right_b', 40])
+		movement = (['left_f', 40], ['right_b', 40])
         if bearings[2][0] !=None:
-            movement = (['left_f', 0], ['right_b', 0])
-            nav_smachine.find_sample()
+            	movement = (['left_f', 0], ['right_b', 0])
+            	nav_smachine.find_sample()
             
     
     def on_approach_target(self):
@@ -102,18 +102,19 @@ class NavSMachine_impl:
 	        GD = [[],[],[]]
 
         for x in range(0,len(bearings[2])):
-	        for i in range(-31,32):
+		for i in range(-31,32):
 		        from_peak = abs(bearings[2][x]-i)
 		        peak = 283-distance[2][x]
 		        GD_value = peak-(peak*from_peak/31)
-                if GD_value<0:
-                    GD_value = 0
+                	if GD_value<0:
+                    		GD_value = 0
 		        GD[x] = GD[x] + [GD_value]
+			
         for j in range(0,63):
-            combined_GD_value = 0
-            for y in range(0,len(bearings[2])):
-                combined_GD_value = combinded_GD_value+GD[y][j]
-            compiled_GD = compiled_GD + [combined_GD_value]
+		combined_GD_value = 0
+            	for y in range(0,len(bearings[2])):
+                	combined_GD_value = combinded_GD_value+GD[y][j]
+           	compiled_GD = compiled_GD + [combined_GD_value]
         
         compiled_OM = []
         if len(bearings[3])==1:
@@ -125,28 +126,30 @@ class NavSMachine_impl:
 
         for x in range(0,len(bearings[3])):
 	        for i in range(-31,32):
-		        from_peak = abs(bearings[3][x]-i)
-		        peak = 283-distance[3][x]
+			from_peak = abs(bearings[3][x]-i)
+		       	peak = 283-distance[3][x]
 		        if peak>203:
-                    if from_peak==0:
-                        OM_value = peak
-                    
-                    decision_tool = peak - 203
-                    if descision_tool/from_peak>4:
-                        OM_value = peak-(peak*from_peak/100)
-                else:
-                    OM_value = 0
+                    		if from_peak==0:
+                        		OM_value = peak
+				decision_tool = peak-203
+                    		if (descision_tool/from_peak)>4:
+					OM_value = peak-(peak*from_peak/100)
+				else:
+					OM_value = 0
+                	else:
+                    		OM_value = 0
 		        OM[x] = OM[x] + [OM_value]
+			
         for j in range(0,63):
-            combined_OM_value = 0
-            for y in range(0,len(bearings[3])):
-                combined_OM_value = combinded_OM_value+OM[y][j]
-            compiled_OM = compiled_OM + [combined_OM_value]
+        	combined_OM_value = 0
+            	for y in range(0,len(bearings[3])):
+                	combined_OM_value = combinded_OM_value+OM[y][j]
+            	compiled_OM = compiled_OM + [combined_OM_value]
 	    
         compiled_PF = []
         for i in range(0,63):
-            PF_value = compiled_OM[i]+compiled_GD[i]
-            compiled_PF = compiled_PF + [PF_value]
+            	PF_value = compiled_OM[i]+compiled_GD[i]
+            	compiled_PF = compiled_PF + [PF_value]
             
 
     def on_board_lander(self):
