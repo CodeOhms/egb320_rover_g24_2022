@@ -13,4 +13,4 @@ def close():
     impl.close_impl()
 
 def get_decision():
-    impl.get_decision_impl()
+    return impl.get_decision_impl()

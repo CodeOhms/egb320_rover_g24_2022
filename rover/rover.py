@@ -7,8 +7,6 @@ def rover_loop():
 
     # Get decisions from the navigation subsystem:
     decision = nav.get_decision()
-    print('Do: ', decision)
-    print()
 
     # Act:
     mob.act_on(decision)

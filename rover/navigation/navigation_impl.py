@@ -10,4 +10,4 @@ def close_impl():
     close_sync_impl()
 
 def get_decision_impl():
-    get_decision_sync_impl()
+    return get_decision_sync_impl()
