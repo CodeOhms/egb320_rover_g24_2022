@@ -148,7 +148,7 @@ class NavSMachine_impl:
 	    
         compiled_PF = []
         for i in range(0,63):
-            	PF_value = compiled_OM[i]+compiled_GD[i]
+            	PF_value = compiled_GD[i]-compiled_OM[i]
             	compiled_PF = compiled_PF + [PF_value]
             
 
