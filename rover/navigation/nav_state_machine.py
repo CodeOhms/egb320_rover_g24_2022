@@ -38,35 +38,35 @@ class NavSMachine(StateMachine):
         self.func_impls.on_start()
     
     def on_approach_target(self):
-        pass
+        self.func_impls.on_approach_target
 
     def on_obtain_sample(self):
-        pass
+        self.func_impls.on_obtain_sample()
 
     def on_find_lander(self):
-        pass
+        self.func_impls.on_find_lander()
 
     def on_flip_rock(self):
-        pass
+        self.func_impls.on_flip_rock()
 
     def on_find_sample(self):
-        pass
+        self.func_impls.on_find_sample()
 
     def on_board_lander(self):
-        pass
+        self.func_impls.on_board_lander()
 
     def on_find_target(self):
-        pass
+        self.func_impls.on_find_target()
 
     def on_finish(self):
-        pass
+        self.func_impls.on_finish
 
     # Functions run on state entry:
     def on_enter_initialising(self):
         self.func_impls.on_enter_initialising()
     
     def on_enter_approach(self):
-        pass
+        self.func_impls.on_enter_approach()
     
     def on_enter_done(self):
         '''
@@ -79,7 +79,7 @@ class NavSMachine(StateMachine):
         self.func_impls.on_exit_initialising()
     
     def on_exit_approach(self):
-        pass
+        self.func_impls.on_exit_approach()
     
     def on_exit_done(self):
         self.func_impls.on_exit_done()

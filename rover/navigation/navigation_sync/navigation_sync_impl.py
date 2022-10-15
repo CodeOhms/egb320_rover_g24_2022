@@ -3,6 +3,7 @@ from navigation.nav_state_machine import NavSMachine
 nav_smachine_impl = None
 nav_smachine = None
 
+# DOCS: https://python-statemachine.readthedocs.io/en/latest/readme.html
 def init_sync_impl():
     global nav_smachine_impl
     global nav_smachine
@@ -10,6 +11,7 @@ def init_sync_impl():
     nav_smachine_impl = NavSMachine_impl()
     nav_smachine = NavSMachine(nav_smachine_impl)
 
+    # Example of how to use transistions (state to state):
     print(nav_smachine.current_state)
     nav_smachine.init()
     print(nav_smachine.current_state)
@@ -38,7 +40,12 @@ def close_sync_impl():
     pass
 
 def get_decision_sync_impl():
-    pass
+    '''
+    
+    RETURNS: a string representing the decision of the navigation system.
+    '''
+    
+    return 'decision'
 
 # State machine functions implementations:
 class NavSMachine_impl:

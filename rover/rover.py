@@ -1,14 +1,17 @@
 from vision import vision as vis
 from navigation import navigation as nav
+from mobility import mobility as mob
 
 def rover_loop():
     ret = True
 
     # Get decisions from the navigation subsystem:
-    # nav.write_data()
-    # decision = nav.get_decision()
+    decision = nav.get_decision()
+    print('Do:' decision)
+    print()
 
     # Act:
+    mob.act_on(decision)
 
     # Display information from the vision system:
     frame = vis.get_frame()
