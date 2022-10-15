@@ -1,6 +1,7 @@
+# from gpio_interface import gpio_interface as io_pins
 from vision import vision as vis
 from navigation import navigation as nav
-from mobility import mobility as mob
+# from mobility import mobility as mob
 
 def rover_loop():
     ret = True
@@ -9,7 +10,7 @@ def rover_loop():
     decision = nav.get_decision()
 
     # Act:
-    mob.act_on(decision)
+    # mob.act_on(decision)
 
     # Display information from the vision system:
     frame = vis.get_frame()
@@ -37,11 +38,17 @@ if __name__ == "__main__":
     print('Initialising systems...')
     print()
 
+    # io_pins.init()
     vis.init()
-    nav.init()
+    vis_to_nav_callbacks = (vis.get_bearings, vis.get_distances)
+    nav.init(vis_to_nav_callbacks)
+    # mob.init()
     # Setup display windows:
 
+    # io_pins.start()
     vis.start(1200)
+    nav.start()
+    # mob.start()
 
     while(True):
         if not rover_loop():
@@ -54,8 +61,10 @@ if __name__ == "__main__":
     print('Cleaning up...')
     print()
 
+    # io_pins.close()
     vis.close()
-    # nav.close()
+    nav.close()
+    # mob.close()
 
     print('Done!')
     print()

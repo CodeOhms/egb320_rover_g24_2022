@@ -2,9 +2,9 @@ import navigation.navigation_impl as impl
 
 nav_smachine = None
 
-def init():
+def init(vis_to_nav_callbacks):
     global nav_smachine
-    nav_smachine = impl.init_impl()
+    nav_smachine = impl.init_impl(vis_to_nav_callbacks)
 
 def start():
     impl.start_impl()

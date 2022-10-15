@@ -1,6 +1,5 @@
 import mobility.mobility_impl as impl
 
-
 def init():
     impl.init_impl()
 
@@ -12,3 +11,12 @@ def close():
 
 def act_on(decision):
     impl.act_on_impl(decision)
+
+def collect_sample():
+    impl.collect_sample()
+
+def turn_left():
+    pass
+
+def turn_right():
+    pass
