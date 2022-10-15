@@ -142,7 +142,8 @@ class NavSMachine_impl:
             for y in range(0,len(bearings[3])):
                 combined_OM_value = combinded_OM_value+OM[y][j]
             compiled_OM = compiled_OM + [combined_OM_value]
-        PF = []
+	    
+        compiled_PF = []
         for i in range(0,63):
             PF_value = compiled_OM[i]+compiled_GD[i]
             compiled_PF = compiled_PF + [PF_value]
