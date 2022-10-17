@@ -11,6 +11,7 @@ global sample = 2
 global rock = 4
 global lander = 5
 
+
 # DOCS: https://python-statemachine.readthedocs.io/en/latest/readme.html
 def init_sync_impl(vis_to_nav_callbacks):
     global nav_smachine_impl
@@ -18,6 +19,8 @@ def init_sync_impl(vis_to_nav_callbacks):
     global vis_get_bearings
     global vis_get_distances
     global movement
+    global servo
+    global retrieved_samples = 0
 
     vis_get_bearings, vis_get_distances = vis_to_nav_callbacks
     # Example, but it shouldn't be used in this function:
@@ -126,6 +129,18 @@ def create_potential_field(goal):
             	compiled_PF = compiled_PF + [PF_value]
 	return compiled_PF
 
+def navigate_PF(PF):
+	max = max(PF)
+	position_of_max = PF.index(max)
+	bearing = position_of_max - 31
+	if bearing<0:
+		movement = (['left_f', 40*(1.0-0.8*abs(bearing)/40)], ['right_f', 40])
+	elif bearing>0:
+		movement = (['left_f', 40], ['right_f', 40*(1.0-0.8*abs(bearing)/40)])
+	else:
+		movement = (['left_f', 40], ['right_f', 40])
+	return bearing
+
 # State machine functions implementations:
 class NavSMachine_impl:
     def close(self):
@@ -134,36 +149,97 @@ class NavSMachine_impl:
     # Functions run on transistions:
     def on_start(self):
         print('Starting navigation state machine...')
-        print()
-        bearings = vis_get_bearings
-        while bearings[2][0] != None:
-		movement = (['left_f', 40], ['right_b', 40])
-        if bearings[2][0] !=None:
-            	movement = (['left_f', 0], ['right_b', 0])
-            	nav_smachine.find_sample()
-            
-    
+                   
     def on_approach_target(self):
         pass
 
     def on_obtain_sample(self):
-        pass
+        servo = 6.75
+	movement = (['left_f', 0], ['right_f', 0])
+	sleep(0.8)
+	distance = vis_get_distances
+	movement = (['left_f', 30], ['right_f', 30])
+	sleep(0.2*distance[2][0])
+	servo = 9
+	movement = (['left_f', 0], ['right_f', 0])
+	sleep(0.5)
+	distance = vis_get_distances
+	if(distance[2][0]<15&&distance[2][0]>2):
+		nav_smachine.refind_sample()
+	else:
+		nav_smachine.find_lander()
+		
+			
+	
 
     def on_find_lander(self):
-        pass
+        bearings = vis_get_bearings
+	distance = vis_get_distances
+   	while bearings[5][0] == None:
+		movement = (['left_b', 30], ['right_f', 30])
+		bearings = vis_get_bearings
+	if bearings[5][0] != None:
+            	movement = (['left_b', 0], ['right_f', 0])
+    	while (nav_smachine.current_state==):
+		if distance[5][0] != None:
+			PF = create_potential_field(5)
+			bearing = navigate_PF(PF)
+			if max(PF)>280:
+				if bearing<4 && bearing>-4:
+				movement = (['left_f', 30], ['right_f', 30])
+		else:
+			nav_smachine.board_lander()
+			
+				
 
     def on_flip_rock(self):
-        pass
-
+        servo = 6.75
+	movement = (['left_f', 0], ['right_f', 0])
+	sleep(0.8)
+	distance = vis_get_distances
+	movement = (['left_f', 30], ['right_f', 30])
+	sleep(0.2*distance[4][0])
+	movement = (['left_f', 0], ['right_f', 0])
+	sleep(0.5)
+	servo = 9
+	distance = vis_get_distances
+	if(distance[2][0]!=None):
+		nav_smachine.hidden_sample()
+	else:
+		nav_smachine.refind_rock()
+	
+    def on_hidden_sample(self):
+    	pass
+	
     def on_find_sample(self):
-        sample_PF = create_potential_field(sample)            
+    	pass
 
+    def on_refind_sample(self):
+    	pass
+        
     def on_board_lander(self):
-        pass
+        while(distance[5][0]==None):
+		movement = (['left_f', 30], ['right_f', 30])
+		distance = vis_get_distances
+	movement = (['left_f', 0], ['right_f', 0])
+	sleep(0.5)
+	servo = 6.75
+	sleep(0.5)
+	movement = (['left_b', 20], ['right_b', 20])
+	sleep(0.5)
+	movement = (['left_b', 0], ['right_b', 0])
+	retrieved_samples = retrieved_samples+1
+	if retrieved_samples<2:
+		nav_smachine.find_sample()
+	else:
+		nav_smachine.find_rock()
 
-    def on_find_target(self):
-        pass
+    def on_find_rock(self):
+    	pass
 
+    def on_refind_rock(self):
+        pass
+    
     def on_finish(self):
         pass
 
@@ -175,8 +251,35 @@ class NavSMachine_impl:
         print('Navigation state machine READY!')
         print()
     
-    def on_enter_approach(self):
-        pass
+    def on_enter_find_s(self):
+        servo = 9
+    	bearings = vis_get_bearings
+   	while bearings[2][0] == None:
+		movement = (['left_b', 30], ['right_f', 30])
+		bearings = vis_get_bearings
+	if bearings[2][0] != None:
+            	movement = (['left_b', 0], ['right_f', 0])
+    	while (nav_smachine.current_state==):
+		PF = create_potential_field(2)
+		bearing = navigate_PF(PF)
+		if max(PF)>276:
+			if bearing<4 && bearing>-4:
+				nav_smachine.obtain_sample()
+    
+    def on_enter_find_r(self):
+    	servo = 9
+    	bearings = vis_get_bearings
+   	while bearings[4][0] == None:
+		movement = (['left_b', 30], ['right_f', 30])
+		bearings = vis_get_bearings
+	if bearings[4][0] != None:
+            	movement = (['left_b', 0], ['right_f', 0])
+    	while (nav_smachine.current_state==):
+		PF = create_potential_field(4)
+		bearing = navigate_PF(PF)
+		if max(PF)>276:
+			if bearing<4 && bearing>-4:
+				nav_smachine.flip_rock()
     
     def on_enter_done(self):
         '''
@@ -190,8 +293,6 @@ class NavSMachine_impl:
         print('Navigation state machine RUNNING!')
         print()
     
-    def on_exit_approach(self):
-        pass
     
     def on_exit_done(self):
         print('Navigation state machine CLOSED!')
