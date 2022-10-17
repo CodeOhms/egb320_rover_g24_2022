@@ -180,7 +180,7 @@ class NavSMachine_impl:
 		bearings = vis_get_bearings
 	if bearings[5][0] != None:
             	movement = (['left_b', 0], ['right_f', 0])
-    	while (nav_smachine.current_state==):
+    	while (nav_smachine.is_findl==True):
 		if distance[5][0] != None:
 			PF = create_potential_field(5)
 			bearing = navigate_PF(PF)
@@ -259,7 +259,7 @@ class NavSMachine_impl:
 		bearings = vis_get_bearings
 	if bearings[2][0] != None:
             	movement = (['left_b', 0], ['right_f', 0])
-    	while (nav_smachine.current_state==):
+    	while (nav_smachine.is_finds==True):
 		PF = create_potential_field(2)
 		bearing = navigate_PF(PF)
 		if max(PF)>276:
@@ -274,7 +274,7 @@ class NavSMachine_impl:
 		bearings = vis_get_bearings
 	if bearings[4][0] != None:
             	movement = (['left_b', 0], ['right_f', 0])
-    	while (nav_smachine.current_state==):
+    	while (nav_smachine.is_findr==True):
 		PF = create_potential_field(4)
 		bearing = navigate_PF(PF)
 		if max(PF)>276:
