@@ -38,7 +38,7 @@ class NavSMachine(StateMachine):
         self.func_impls.on_start()
     
     def on_approach_target(self):
-        self.func_impls.on_approach_target
+        self.func_impls.on_approach_target()
 
     def on_obtain_sample(self):
         self.func_impls.on_obtain_sample()

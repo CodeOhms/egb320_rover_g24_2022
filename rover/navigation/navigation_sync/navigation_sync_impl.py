@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 import numpy as np
 import time
 from time import sleep
+=======
+from queue import SimpleQueue
+>>>>>>> main
 from navigation.nav_state_machine import NavSMachine
 
+decisions_q = None
 nav_smachine_impl = None
 nav_smachine = None
 vis_get_bearings = None
@@ -12,6 +17,7 @@ retrieved_samples = 0
 
 # DOCS: https://python-statemachine.readthedocs.io/en/latest/readme.html
 def init_sync_impl(vis_to_nav_callbacks):
+	global decisions_q
     global nav_smachine_impl
     global nav_smachine
     global vis_get_bearings
@@ -20,7 +26,12 @@ def init_sync_impl(vis_to_nav_callbacks):
     vis_get_bearings, vis_get_distances = vis_to_nav_callbacks
     # Example, but it shouldn't be used in this function:
     # print(vis_get_bearings())
+<<<<<<< HEAD
     
+=======
+
+	decisions_q = SimpleQueue()
+>>>>>>> main
     nav_smachine_impl = NavSMachine_impl()
     nav_smachine = NavSMachine(nav_smachine_impl)
     nav_smachine.init()
@@ -44,7 +55,7 @@ def init_sync_impl(vis_to_nav_callbacks):
     # nav_smachine.find_target()
     # print(nav_smachine.current_state)
 
-    return nav_smachine
+    return decisions_q, nav_smachine
 
 def start_sync_impl():
     global nav_smachine
@@ -59,8 +70,14 @@ def get_decision_sync_impl():
     
     RETURNS: a string representing the decision of the navigation system.
     '''
+
+	decision = decisions_q.get()
+
+	# Below only to be done in the synchronous implementation!
+	cb = nav_smachine_impl.get_next_state_callback()
+	cb()
     
-    return 'decision'
+    return decision
 
 def create_potential_field(goal):
 	bearings = vis_get_bearings()
@@ -138,8 +155,17 @@ def navigate_PF(PF):
 
 # State machine functions implementations:
 class NavSMachine_impl:
+	self.nxt_st_cb = None
+
+	# Functions unrelated to state machine library:
     def close(self):
         pass
+
+	def set_next_state_callback(self, next_state_callback):
+		self.nxt_st_cb = next_state_callback
+
+	def get_next_state_callback(self):
+		return self.nxt_st_cb
 
     # Functions run on transistions:
     def on_start(self):
