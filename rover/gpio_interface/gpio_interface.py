@@ -9,6 +9,9 @@ def start():
 def close():
     impl.close_impl()
 
+def servo_claw():
+    impl.servo_claw_impl()
+
 def motor_fr():
     impl.motor_fr_impl()
 
