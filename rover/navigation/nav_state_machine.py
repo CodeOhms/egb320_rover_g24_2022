@@ -3,8 +3,9 @@ from statemachine import StateMachine, State
 class NavSMachine(StateMachine):
     off = State('Uninitialised', initial=True)
     initialising = State('Initialising')
-    find = State('Find')
-    approach = State('Approach')
+    find_s = State('Find Sample')
+    find_l = State('Find Lander')
+    find_r = State('Find Rock')
     collect = State('Collect sample')
     uncover = State('Uncover rock')
     deposit = State('Deposit sample')
@@ -12,14 +13,15 @@ class NavSMachine(StateMachine):
 
     # State transistions:
     init = off.to(initialising)
-    start = initialising.to(find)
-    approach_target = find.to(approach)
-    obtain_sample = approach.to(collect)
-    find_lander = collect.to(find)
-    flip_rock = approach.to(uncover)
-    find_sample = uncover.to(find)
+    start = initialising.to(find_s)
+    obtain_sample = find_s.to(collect)
+    find_lander = collect.to(find_l)
+    flip_rock = find_r.to(uncover)
+    hidden_sample = uncover.to(find_s)
+    find_sample = deposit.to(find_s)
+    refind_sample = collect.to(find_s)
     board_lander = approach.to(deposit)
-    find_target = deposit.to(find)
+    find_rock = deposit.to(find_r)
     finish = find.to(done)
 
     def __init__(self, func_impls):
@@ -37,9 +39,6 @@ class NavSMachine(StateMachine):
     def on_start(self):
         self.func_impls.on_start()
     
-    def on_approach_target(self):
-        self.func_impls.on_approach_target()
-
     def on_obtain_sample(self):
         self.func_impls.on_obtain_sample()
 
@@ -49,14 +48,20 @@ class NavSMachine(StateMachine):
     def on_flip_rock(self):
         self.func_impls.on_flip_rock()
 
+    def on_hidden_sample(self):
+        self.func_impls.on_hidden_sample()
+    
     def on_find_sample(self):
         self.func_impls.on_find_sample()
 
+    def on_refind_sample(self):
+        self.func_impls.on_refind_sample()
+        
     def on_board_lander(self):
         self.func_impls.on_board_lander()
 
-    def on_find_target(self):
-        self.func_impls.on_find_target()
+    def on_find_rock(self):
+        self.func_impls.on_find_rock()
 
     def on_finish(self):
         self.func_impls.on_finish
@@ -65,8 +70,8 @@ class NavSMachine(StateMachine):
     def on_enter_initialising(self):
         self.func_impls.on_enter_initialising()
     
-    def on_enter_approach(self):
-        self.func_impls.on_enter_approach()
+    def on_enter_find_s(self):
+        self.func_impls.on_enter_find_s()
     
     def on_enter_done(self):
         '''
@@ -77,9 +82,6 @@ class NavSMachine(StateMachine):
     # Function run on state exit:
     def on_exit_initialising(self):
         self.func_impls.on_exit_initialising()
-    
-    def on_exit_approach(self):
-        self.func_impls.on_exit_approach()
     
     def on_exit_done(self):
         self.func_impls.on_exit_done()
