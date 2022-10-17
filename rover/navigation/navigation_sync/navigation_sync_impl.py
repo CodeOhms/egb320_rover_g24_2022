@@ -7,6 +7,9 @@ nav_smachine_impl = None
 nav_smachine = None
 vis_get_bearings = None
 vis_get_distances = None
+global sample = 2
+global rock = 4
+global lander = 5
 
 # DOCS: https://python-statemachine.readthedocs.io/en/latest/readme.html
 def init_sync_impl(vis_to_nav_callbacks):
@@ -61,50 +64,21 @@ def get_decision_sync_impl():
     
     return 'decision'
 
-# State machine functions implementations:
-class NavSMachine_impl:
-    def close(self):
-        pass
-
-    # Functions run on transistions:
-    def on_start(self):
-        print('Starting navigation state machine...')
-        print()
-        bearings = vis_get_bearings
-        while bearings[2][0] != None:
-		movement = (['left_f', 40], ['right_b', 40])
-        if bearings[2][0] !=None:
-            	movement = (['left_f', 0], ['right_b', 0])
-            	nav_smachine.find_sample()
-            
-    
-    def on_approach_target(self):
-        pass
-
-    def on_obtain_sample(self):
-        pass
-
-    def on_find_lander(self):
-        pass
-
-    def on_flip_rock(self):
-        pass
-
-    def on_find_sample(self):
-        bearings = vis_get_bearings
+def create_potential_field(goal):
+	bearings = vis_get_bearings
         distance = vis_get_distances
         compiled_GD = []
-        if len(bearings[2])==1:
+        if len(bearings[goal])==1:
 	        GD = [[]]
-        elif len(bearings[2])==2:
+        elif len(bearings[goal])==2:
 	        GD = [[],[]]
-        elif len(bearings[2])==3:
+        elif len(bearings[goal])==3:
 	        GD = [[],[],[]]
 
-        for x in range(0,len(bearings[2])):
+        for x in range(0,len(bearings[goal])):
 		for i in range(-31,32):
-		        from_peak = abs(bearings[2][x]-i)
-		        peak = 283-distance[2][x]
+		        from_peak = abs(bearings[goal][x]-i)
+		        peak = 283-distance[goal][x]
 		        GD_value = peak-(peak*from_peak/31)
                 	if GD_value<0:
                     		GD_value = 0
@@ -112,7 +86,7 @@ class NavSMachine_impl:
 			
         for j in range(0,63):
 		combined_GD_value = 0
-            	for y in range(0,len(bearings[2])):
+            	for y in range(0,len(bearings[goal])):
                 	combined_GD_value = combinded_GD_value+GD[y][j]
            	compiled_GD = compiled_GD + [combined_GD_value]
         
@@ -150,7 +124,39 @@ class NavSMachine_impl:
         for i in range(0,63):
             	PF_value = compiled_GD[i]-compiled_OM[i]
             	compiled_PF = compiled_PF + [PF_value]
+	return compiled_PF
+
+# State machine functions implementations:
+class NavSMachine_impl:
+    def close(self):
+        pass
+
+    # Functions run on transistions:
+    def on_start(self):
+        print('Starting navigation state machine...')
+        print()
+        bearings = vis_get_bearings
+        while bearings[2][0] != None:
+		movement = (['left_f', 40], ['right_b', 40])
+        if bearings[2][0] !=None:
+            	movement = (['left_f', 0], ['right_b', 0])
+            	nav_smachine.find_sample()
             
+    
+    def on_approach_target(self):
+        pass
+
+    def on_obtain_sample(self):
+        pass
+
+    def on_find_lander(self):
+        pass
+
+    def on_flip_rock(self):
+        pass
+
+    def on_find_sample(self):
+        sample_PF = create_potential_field(sample)            
 
     def on_board_lander(self):
         pass
