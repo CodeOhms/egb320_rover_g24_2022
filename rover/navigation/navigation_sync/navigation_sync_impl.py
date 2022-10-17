@@ -5,7 +5,9 @@ from time import sleep
 =======
 from queue import SimpleQueue
 >>>>>>> main
+from enum import Enum
 from navigation.nav_state_machine import NavSMachine
+import mobility.mobility_helpers as mobh
 
 decisions_q = None
 nav_smachine_impl = None
@@ -91,7 +93,7 @@ def create_potential_field(goal):
 	        GD = [[],[],[]]
 
         for x in range(0,len(bearings[goal])):
-		for i in range(-31,32):
+			for i in range(-31,32):
 		        from_peak = abs(bearings[goal][x]-i)
 		        peak = 283-distance[goal][x]
 		        GD_value = peak-(peak*from_peak/31)
@@ -100,7 +102,7 @@ def create_potential_field(goal):
 		        GD[x] = GD[x] + [GD_value]
 			
         for j in range(0,63):
-		combined_GD_value = 0
+			combined_GD_value = 0
             	for y in range(0,len(bearings[goal])):
                 	combined_GD_value = combinded_GD_value+GD[y][j]
            	compiled_GD = compiled_GD + [combined_GD_value]
@@ -153,6 +155,47 @@ def navigate_PF(PF):
 		movement = (['left_f', 40], ['right_f', 40])
 	return bearing
 
+class Targets(Enum):
+	sample = 0
+	lander = 1
+
+def finding_target(find=Targets.sample):
+	'''
+	Find either targets by priorty, or the target specified.
+
+	@param find If not specified, the
+	parameter will be set to 'sample'. If the parameter is
+	'sample' the function will attempt to find a sample or a rock,
+	but will prioritise finding a rock.
+	If set to 'lander' the function will attempt to find the
+	lander.
+	'''
+
+	bearings = vis_get_bearings()
+	distance = vis_get_distances()
+
+	target_i = None # Target indicies in bearings and distances.
+	if find != Targets.sample and find != Targets.lander:
+		target_i = [2, 4]
+	else if :
+		target_i = [5]
+	else:
+		raise("Expected either Targets.sample or Targets.lander for the `find` argument!")
+
+	# Pivot to find a target:
+	targ_bear = None
+	targ_dist = None
+	for t_i in target_i:
+		targ_bear = bearings[t_i]
+		targ_dist = distances[t_i]
+		if len(targ_bear) > 0 and len(targ_dist) > 0:
+			mobh.halt()
+			break
+		else:
+			mobh.pivot_left()
+
+	return targ_bear, targ_dist
+
 # State machine functions implementations:
 class NavSMachine_impl:
 	self.nxt_st_cb = None
@@ -170,6 +213,15 @@ class NavSMachine_impl:
     # Functions run on transistions:
     def on_start(self):
         print('Starting navigation state machine...')
+
+		targ_bear, targ_dist = finding_target()
+		# Target not found! Need to allow main loop to continue for vision system,
+		# and next loop start finding again!
+		if targ_bear is None and targ_dist is None:
+			self.set_next_state_callback(nav_smachine.on_find_target)
+	
+	def on_find_target(self):
+
                    
     def on_approach_target(self):
         pass
@@ -186,9 +238,11 @@ class NavSMachine_impl:
 		sleep(0.5)
 		distance = vis_get_distances
 		if(distance[2][0]<15&&distance[2][0]>2):
-			nav_smachine.refind_sample()
+			# nav_smachine.refind_sample()
+			self.set_next_state_callback(nav_smachine.refind_sample)
 		else:
-			nav_smachine.find_lander()
+			# nav_smachine.find_lander()
+			self.set_next_state_callback(nav_smachine.find_lander)
 		
     def on_find_lander(self):
         bearings = vis_get_bearings()
@@ -206,7 +260,8 @@ class NavSMachine_impl:
 						if bearing<4 && bearing>-4:
 						movement = (['left_f', 30], ['right_f', 30])
 				else:
-					nav_smachine.board_lander()
+					# nav_smachine.board_lander()
+					self.set_next_state_callback(nav_smachine.board_lander)
 
     def on_flip_rock(self):
         servo = 6.75
@@ -220,9 +275,11 @@ class NavSMachine_impl:
 		servo = 9
 		distance = vis_get_distances()
 		if(distance[2][0]!=None):
-			nav_smachine.hidden_sample()
+			# nav_smachine.hidden_sample()
+			self.set_next_state_callback(nav_smachine.hidden_sample)
 		else:
-			nav_smachine.refind_rock()
+			# nav_smachine.refind_rock()
+			self.set_next_state_callback(nav_smachine.refind_rock)
 		
 		def on_hidden_sample(self):
 			pass
@@ -244,11 +301,13 @@ class NavSMachine_impl:
 				movement = (['left_b', 20], ['right_b', 20])
 				sleep(0.5)
 				movement = (['left_b', 0], ['right_b', 0])
-				retrieved_samples = retrieved_samples+1
+				retrieved_samples += 1
 				if retrieved_samples<2:
-					nav_smachine.find_sample()
+					# nav_smachine.find_sample()
+					self.set_next_state_callback(nav_smachine.find_sample)
 				else:
-					nav_smachine.find_rock()
+					# nav_smachine.find_rock()
+					self.set_next_state_callback(nav_smachine.find_rock)
 
     def on_find_rock(self):
     	pass
@@ -280,7 +339,8 @@ class NavSMachine_impl:
 				bearing = navigate_PF(PF)
 				if max(PF)>276:
 					if bearing<4 && bearing>-4:
-						nav_smachine.obtain_sample()
+						# nav_smachine.obtain_sample()
+						self.set_next_state_callback(nav_smachine.obtain_sample)
     
     def on_enter_find_r(self):
     	servo = 9
@@ -295,7 +355,8 @@ class NavSMachine_impl:
 				bearing = navigate_PF(PF)
 				if max(PF)>276:
 					if bearing<4 && bearing>-4:
-						nav_smachine.flip_rock()
+						# nav_smachine.flip_rock()
+						self.set_next_state_callback(nav_smachine.flip_rock)
     
     def on_enter_done(self):
         '''
