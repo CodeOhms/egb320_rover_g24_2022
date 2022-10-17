@@ -1,10 +1,13 @@
 import navigation.navigation_impl as impl 
 
+decisions_q = None
 nav_smachine = None
 
 def init(vis_to_nav_callbacks):
+    global decisions_q
     global nav_smachine
-    nav_smachine = impl.init_impl(vis_to_nav_callbacks)
+
+    decisions_q, nav_smachine = impl.init_impl(vis_to_nav_callbacks)
 
 def start():
     impl.start_impl()
