@@ -1,4 +1,5 @@
 from enum import Enum
+from mobility.mobility_enums import *
 from mobility import mobility as mob
 
 ##########
@@ -122,11 +123,9 @@ def finding_target(target, vis_get_bearings, vis_get_distances):
             targ_bear = bearings[t_i]
             targ_dist = distances[t_i]
             if len(targ_bear) == 0 and len(targ_dist) == 0:
-                # decision = (('pivot_l')) # Keep looking...
-                mob.act_on( (('pivot_l'),) ) # Keep looking...
+                mob.act_on( ((Actions.pivot_l,),) ) # Keep looking...
             else:
-                # decision = (('halt')) # Found it! Stop!
-                mob.act_on( (('halt'),) ) # Found it! Stop!
+                mob.act_on( ((Actions.m_halt,),) ) # Found it! Stop!
                 found_targ = Targets[t_i]
                 break
 

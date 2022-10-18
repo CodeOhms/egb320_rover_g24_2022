@@ -38,7 +38,7 @@ def init_parallel_impl(vis_to_nav_callbacks):
     global loop
     
     loop = True
-    nav_process = Process(target=nav_loop, args=None)
+    nav_process = Process(target=nav_loop)
     
     global decisions_q
     global nav_smachine_impl
