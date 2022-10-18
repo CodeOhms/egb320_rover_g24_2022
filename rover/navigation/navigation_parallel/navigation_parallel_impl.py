@@ -5,6 +5,7 @@ import time
 from time import sleep
 from queue import SimpleQueue
 from navigation.nav_state_machine import NavSMachine
+from mobility import mobility as mob
 from mobility.mobility_enums import *
 from navigation.navigation_parallel.nav_helpers import *
 
@@ -24,7 +25,10 @@ def nav_loop():
     global nav_smachine_impl
     
     # Start the state machine!
+    print(nav_smachine.current_state)
     nav_smachine.start()
+    print(nav_smachine.current_state)
+    
     
     # while(loop):
     #     cb, cb_args = nav_smachine_impl.get_next_state_callback()
@@ -32,6 +36,8 @@ def nav_loop():
     #         cb(cb_args)
     #     else:
     #         cb()
+    
+    print('guiguiguihjvyf')
         
 def init_parallel_impl(vis_to_nav_callbacks):
     global nav_process
@@ -165,7 +171,26 @@ class NavSMachine_impl(object):
     
     def on_enter_find(self):
         print('Forward')
-        mob.act_on((Actions.m_forward_l, Actions.m_forward_r))
+        mob.act_on( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
+        time.sleep(0.2)
+        print('Stop')
+        mob.act_on( ((Actions.m_halt,),) )
+        time.sleep(0.5)
+        print('Backwards')
+        mob.act_on( ((Actions.m_back_l,), (Actions.m_back_r,)) )
+        time.sleep(0.2)
+        print('Stop')
+        mob.act_on( ((Actions.m_halt,),) )
+        time.sleep(0.5)
+        print('Pivot left')
+        mob.act_on( ((Actions.pivot_l,),) )
+        time.sleep(0.7)
+        print('Pivot right')
+        mob.act_on( ((Actions.pivot_r,),) )
+        time.sleep(0.7)
+        print('Stop')
+        mob.act_on( ((Actions.m_halt,),) )
+    # time.sleep(0.5)
         
         # Make sure claw is not in the way (i.e. lifted):
         # mob.act_on( (('claw_up'),) )

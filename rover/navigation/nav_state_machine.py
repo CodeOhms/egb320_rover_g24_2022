@@ -69,6 +69,9 @@ class NavSMachine(StateMachine):
     # Functions run on state entry:
     def on_enter_initialising(self):
         self.func_impls.on_enter_initialising()
+        
+    def on_enter_find(self):
+        self.func_impls.on_enter_find()
     
     def on_enter_approach(self):
         self.func_impls.on_enter_approach()
