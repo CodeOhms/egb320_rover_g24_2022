@@ -5,9 +5,17 @@ m_driver_in_1 = 14
 m_driver_in_2 = 15
 m_driver_in_3 = 18
 m_driver_in_4 = 17
+pwm = None
+pwm2 = None
+pwm3 = None
+pwm4 = None
 
 def init_impl():
     global claw_servo
+    global pwm 
+    global pwm2
+    global pwm3
+    global pwm4
     
     GPIO.setmode(GPIO.BCM)
     
@@ -19,12 +27,27 @@ def init_impl():
         # Left:
     GPIO.setup(m_driver_in_1, GPIO.OUT)
     GPIO.setup(m_driver_in_2, GPIO.OUT)
+    pwm = GPIO.PWM(m_driver_in_1, 100)
+    pwm2 = GPIO.PWM(m_driver_in_2, 100)
+    
         # Right:
     GPIO.setup(m_driver_in_3, GPIO.OUT)
     GPIO.setup(m_driver_in_4, GPIO.OUT)
+    pwm3 = GPIO.PWM(m_driver_in_3, 100)
+    pwm4 = GPIO.PWM(m_driver_in_4, 100)
 
 def start_impl():
     global claw_servo
+    global pwm 
+    global pwm2
+    global pwm3
+    global pwm4
+    
+    # Start at duty cycle of 0 (stopped):
+    pwm.start(0)
+    pwm2.start(0)
+    pwm3.start(0)
+    pwm4.start(0)
 
     # Claw:
     # claw_servo.start(0) # Begin at 0 degrees.
@@ -44,18 +67,22 @@ def motor_halt_impl():
     GPIO.output(m_driver_in_3, GPIO.LOW)
     GPIO.output(m_driver_in_4, GPIO.LOW)
 
-def motor_forward_r_impl():
-    GPIO.output(m_driver_in_3, GPIO.HIGH)
+def motor_forward_r_impl(duty_cycle):
+    pwm3.ChangeDutyCycle(duty_cycle)
+    # GPIO.output(m_driver_in_3, GPIO.HIGH)
     GPIO.output(m_driver_in_4, GPIO.LOW)
 
-def motor_forward_l_impl():
-    GPIO.output(m_driver_in_1, GPIO.HIGH)
+def motor_forward_l_impl(duty_cycle):
+    pwm.ChangeDutyCycle(duty_cycle)
+    # GPIO.output(m_driver_in_1, GPIO.HIGH)
     GPIO.output(m_driver_in_2, GPIO.LOW)
 
-def motor_back_r_impl():
+def motor_back_r_impl(duty_cycle):
     GPIO.output(m_driver_in_3, GPIO.LOW)
-    GPIO.output(m_driver_in_4, GPIO.HIGH)
+    # GPIO.output(m_driver_in_4, GPIO.HIGH)
+    pwm4.ChangeDutyCycle(duty_cycle)
 
-def motor_back_l_impl():
+def motor_back_l_impl(duty_cycle):
     GPIO.output(m_driver_in_1, GPIO.LOW)
-    GPIO.output(m_driver_in_2, GPIO.HIGH)
+    # GPIO.output(m_driver_in_2, GPIO.HIGH)
+    pwm2.ChangeDutyCycle(duty_cycle)

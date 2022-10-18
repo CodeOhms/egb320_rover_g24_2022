@@ -12,8 +12,8 @@ def rover_loop():
     # decision = nav.get_decision()
 
     print('Forward')
-    io_pins.motor_forward_l()
-    io_pins.motor_forward_r()
+    io_pins.motor_forward_l(20)
+    io_pins.motor_forward_r(20)
     time.sleep(0.2)
     print('Stop')
     io_pins.motor_halt()

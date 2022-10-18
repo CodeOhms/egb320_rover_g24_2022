@@ -9,20 +9,20 @@ def start():
 def close():
     impl.close_impl()
 
-def servo_claw():
-    impl.servo_claw_impl()
+def servo_claw(angle):
+    impl.servo_claw_impl(angle)
 
 def motor_halt():
     impl.motor_halt_impl()
 
-def motor_forward_r():
-    impl.motor_forward_r_impl()
+def motor_forward_r(duty_cycle):
+    impl.motor_forward_r_impl(duty_cycle)
 
-def motor_forward_l():
-    impl.motor_forward_l_impl()
+def motor_forward_l(duty_cycle):
+    impl.motor_forward_l_impl(duty_cycle)
 
-def motor_back_r():
-    impl.motor_back_r_impl()
+def motor_back_r(duty_cycle):
+    impl.motor_back_r_impl(duty_cycle)
 
-def motor_back_l():
-    impl.motor_back_l_impl()
+def motor_back_l(duty_cycle):
+    impl.motor_back_l_impl(duty_cycle)

@@ -32,16 +32,16 @@ def act_on_sync_impl(decisions):
             act_m_forward_r(30)
             
 def act_m_back_l(duty_cycle):
-    io_pins.motor_back_l()
+    io_pins.motor_back_l(duty_cycle)
 
 def act_m_back_r(duty_cycle):
-    io_pins.motor_back_r()
+    io_pins.motor_back_r(duty_cycle)
 
 def act_m_forward_l(duty_cycle):
-    io_pins.motor_forward_l()
+    io_pins.motor_forward_l(duty_cycle)
 
 def act_m_forward_r(duty_cycle):
-    io_pins.motor_forward_r()
+    io_pins.motor_forward_r(duty_cycle)
 
 def act_lift_collector():
     '''
