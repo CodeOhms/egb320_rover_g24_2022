@@ -1,16 +1,27 @@
 import RPi.GPIO as GPIO
 
 claw_servo = None
+m_driver_in_1 = 14
+m_driver_in_2 = 15
+m_driver_in_3 = 18
+m_driver_in_4 = 17
 
 def init_impl():
     global claw_servo
     
-    GPIO.setmode(GPIO.BOARD)
+    GPIO.setmode(GPIO.BCM)
     
-    # Claw:
-    GPIO.setup(, GPIO.OUT)
-    claw_servo = GPIO.PWM(, 100) # Updates at 100 Hz.
-
+    # # Claw servo:
+    # GPIO.setup(, GPIO.OUT)
+    # claw_servo = GPIO.PWM(, 100) # Updates at 100 Hz.
+    
+    # Motors:
+        # Left:
+    GPIO.setup(m_driver_in_1, GPIO.OUT)
+    GPIO.setup(m_driver_in_2, GPIO.OUT)
+        # Right:
+    GPIO.setup(m_driver_in_3, GPIO.OUT)
+    GPIO.setup(m_driver_in_4, GPIO.OUT)
 
 def start_impl():
     global claw_servo
@@ -27,14 +38,24 @@ def servo_claw_impl(angle):
     duty_cycle = angle/180*100
     claw_servo.ChangeDutyCycle(duty_cycle)
 
-def motor_fr_impl():
-    pass
+def motor_halt_impl():
+    GPIO.output(m_driver_in_1, GPIO.LOW)
+    GPIO.output(m_driver_in_2, GPIO.LOW)
+    GPIO.output(m_driver_in_3, GPIO.LOW)
+    GPIO.output(m_driver_in_4, GPIO.LOW)
 
-def motor_fl_impl():
-    pass
+def motor_forward_r_impl():
+    GPIO.output(m_driver_in_3, GPIO.HIGH)
+    GPIO.output(m_driver_in_4, GPIO.LOW)
 
-def motor_br_impl():
-    pass
+def motor_forward_l_impl():
+    GPIO.output(m_driver_in_1, GPIO.HIGH)
+    GPIO.output(m_driver_in_2, GPIO.LOW)
 
-def motor_bl_impl():
-    pass
+def motor_back_r_impl():
+    GPIO.output(m_driver_in_3, GPIO.LOW)
+    GPIO.output(m_driver_in_4, GPIO.HIGH)
+
+def motor_back_l_impl():
+    GPIO.output(m_driver_in_1, GPIO.LOW)
+    GPIO.output(m_driver_in_2, GPIO.HIGH)

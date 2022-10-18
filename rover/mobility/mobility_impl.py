@@ -13,7 +13,8 @@ def act_on_impl(decision):
     act_on_sync_impl(decision)
 
 def collect_sample_impl():
-    collect_sample_sync_impl()
+    pass
+    # collect_sample_sync_impl()
 
 def turn_left_impl():
     pass

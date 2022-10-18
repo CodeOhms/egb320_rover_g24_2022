@@ -13,12 +13,17 @@ class NavSMachine(StateMachine):
     # State transistions:
     init = off.to(initialising)
     start = initialising.to(find)
+    cont_find = find.to(find)
     approach_target = find.to(approach)
+    cont_approach = approach.to(approach)
     obtain_sample = approach.to(collect)
     find_lander = collect.to(find)
+    refind_sample = collect.to(find)
     flip_rock = approach.to(uncover)
+    cont_flip_rock = uncover.to(uncover)
     find_sample = uncover.to(find)
     board_lander = approach.to(deposit)
+    cont_board_lander = deposit.to(deposit)
     find_target = deposit.to(find)
     finish = find.to(done)
 
