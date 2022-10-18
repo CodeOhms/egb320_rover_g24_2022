@@ -1,4 +1,4 @@
-from navigation.navigation_sync.navigation_parallel_impl import *
+from navigation.navigation_parallel.navigation_parallel_impl import *
 
 def init_impl(vis_to_nav_callbacks):
     # return init_sync_impl(vis_to_nav_callbacks)

@@ -17,6 +17,14 @@ def rover_loop():
     time.sleep(0.2)
     print('Stop')
     io_pins.motor_halt()
+    time.sleep(0.5)
+    print('Backwards')
+    io_pins.motor_back_l()
+    io_pins.motor_back_r()
+    time.sleep(0.2)
+    print('Stop')
+    io_pins.motor_halt()
+    time.sleep(0.5)
     # mob.act_on((Actions.m_forward_l, Actions.m_forward_r))
 
     # Display information from the vision system:
