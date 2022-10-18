@@ -2,7 +2,8 @@
 from vision import vision as vis
 from navigation import navigation as nav
 from gpio_interface import gpio_interface as io_pins
-# from mobility import mobility as mob
+from mobility import mobility as mob
+from mobility.mobility_enums import *
 import time
 
 def rover_loop():
@@ -12,8 +13,7 @@ def rover_loop():
     # decision = nav.get_decision()
 
     print('Forward')
-    io_pins.motor_forward_l()
-    io_pins.motor_forward_r()
+    mob.act_on( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
     time.sleep(0.2)
     print('Stop')
     io_pins.motor_halt()
@@ -34,14 +34,6 @@ def rover_loop():
     if not vis.display_frame(frame) or not vis.display_overlays(frame_ovs):
         # Display window was closed! Shutdown application.
         ret = False
-    
-    # print('Bearings:')
-    # print(vis.get_bearings())
-    # print()
-    # print('Distances:')
-    # print(vis.get_distances())
-    # print()
-    # print()
 
     return ret
 
@@ -54,16 +46,16 @@ if __name__ == "__main__":
     print()
 
     io_pins.init()
+    mob.init()
     vis.init()
     # vis_to_nav_callbacks = (vis.get_bearings, vis.get_distances)
     # nav.init(vis_to_nav_callbacks)
-    # mob.init()
     # Setup display windows:
 
     io_pins.start()
+    mob.start()
     vis.start(1200)
     # nav.start()
-    # mob.start()
 
     while(True):
         if not rover_loop():
@@ -77,9 +69,9 @@ if __name__ == "__main__":
     print()
 
     io_pins.close()
+    mob.close()
     vis.close()
     # nav.close()
-    # mob.close()
 
     print('Done!')
     print()
