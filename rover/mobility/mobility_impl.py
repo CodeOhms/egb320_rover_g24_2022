@@ -15,9 +15,3 @@ def act_on_impl(decision):
 def collect_sample_impl():
     pass
     # collect_sample_sync_impl()
-
-def turn_left_impl():
-    pass
-
-def turn_right_impl():
-    pass

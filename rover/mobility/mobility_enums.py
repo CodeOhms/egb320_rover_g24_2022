@@ -6,6 +6,7 @@ class Actions(Enum):
     claw_down = 'claw_down'
     
     # Motors:
+    m_halt = 'm_halt'
     m_forward_r = 'm_forward_r'
     m_forward_l = 'm_forward_l'
     m_back_r = 'm_back_r'

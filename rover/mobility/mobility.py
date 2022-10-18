@@ -16,9 +16,3 @@ def act_on(decision):
 
 def collect_sample():
     impl.collect_sample()
-
-def turn_left():
-    pass
-
-def turn_right():
-    pass

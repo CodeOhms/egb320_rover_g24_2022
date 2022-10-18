@@ -7,7 +7,7 @@ from mobility.mobility_enums import *
 import time
 
 def rover_loop():
-    ret = True
+    ret = False
 
     # Get decisions from the navigation subsystem:
     # decision = nav.get_decision()
@@ -16,24 +16,31 @@ def rover_loop():
     mob.act_on( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
     time.sleep(0.2)
     print('Stop')
-    io_pins.motor_halt()
+    mob.act_on( ((Actions.m_halt,),) )
     time.sleep(0.5)
     print('Backwards')
-    io_pins.motor_back_l()
-    io_pins.motor_back_r()
+    mob.act_on( ((Actions.m_back_l,), (Actions.m_back_r,)) )
     time.sleep(0.2)
     print('Stop')
-    io_pins.motor_halt()
+    mob.act_on( ((Actions.m_halt,),) )
     time.sleep(0.5)
-    # mob.act_on((Actions.m_forward_l, Actions.m_forward_r))
+    print('Pivot left')
+    mob.act_on( ((Actions.pivot_l,),) )
+    time.sleep(0.7)
+    print('Pivot right')
+    mob.act_on( ((Actions.pivot_r,),) )
+    time.sleep(0.7)
+    print('Stop')
+    mob.act_on( ((Actions.m_halt,),) )
+    time.sleep(0.5)
 
     # Display information from the vision system:
-    frame = vis.get_frame()
-    frame_ovs = vis.get_overlays()
+    # frame = vis.get_frame()
+    # frame_ovs = vis.get_overlays()
     
-    if not vis.display_frame(frame) or not vis.display_overlays(frame_ovs):
-        # Display window was closed! Shutdown application.
-        ret = False
+    # if not vis.display_frame(frame) or not vis.display_overlays(frame_ovs):
+    #     # Display window was closed! Shutdown application.
+    #     ret = False
 
     return ret
 
@@ -47,14 +54,14 @@ if __name__ == "__main__":
 
     io_pins.init()
     mob.init()
-    vis.init()
+    # vis.init()
     # vis_to_nav_callbacks = (vis.get_bearings, vis.get_distances)
     # nav.init(vis_to_nav_callbacks)
     # Setup display windows:
 
     io_pins.start()
     mob.start()
-    vis.start(1200)
+    # vis.start(1200)
     # nav.start()
 
     while(True):
@@ -70,7 +77,7 @@ if __name__ == "__main__":
 
     io_pins.close()
     mob.close()
-    vis.close()
+    # vis.close()
     # nav.close()
 
     print('Done!')
