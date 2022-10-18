@@ -1,7 +1,7 @@
 from mobility.mobility_enums import *
 from gpio_interface import gpio_interface as io_pins
 
-def init_sync_impl(gpio_interface):
+def init_sync_impl():
     print('Initialising mobility system...')
 
 def start_sync_impl():
@@ -14,12 +14,11 @@ def act_on_sync_impl(decisions):
     print('Do: ', decisions)
     print()
     
-    # ( ('claw_up'),('stop'),('right_f', 30) )
+    # ( ('claw_up',), ('stop',), ('right_f', 30) )
     for decision in decisions:
-        dec = decision[0]
-        if Actions.m_forward_r:
-            dc = decision[1]
-            act_m_forward_r(dc)
+        action = decision[0]
+        if action is Actions.m_forward_r:
+            act_m_forward_r(20)
         elif Actions.m_forward_l:
             pass
         elif Actions.m_back_r:
