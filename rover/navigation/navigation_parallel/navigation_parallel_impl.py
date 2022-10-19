@@ -29,13 +29,12 @@ def nav_loop(acts_q):
     nav_smachine.start()
     print(nav_smachine.current_state)
     
-    
-    # while(loop):
-    #     cb, cb_args = nav_smachine_impl.get_next_state_callback()
-    #     if cb_args is not None:
-    #         cb(cb_args)
-    #     else:
-    #         cb()
+    while(loop):
+        cb, cb_args = nav_smachine_impl.get_next_state_callback()
+        if cb_args is not None:
+            cb(cb_args)
+        else:
+            cb()
     
     print('CLOSED NAV LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOP')
         
@@ -171,44 +170,48 @@ class NavSMachine_impl(object):
     
     def on_enter_find(self):
         global actions_q
+        global vis_get_bearings
+        global vis_get_distances
         
-        asdf = 0
-        while(asdf < 3):
-            print('Forward')
-            actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
-            time.sleep(1)
-            print('Stop')
-            actions_q.put( ((Actions.m_halt,),) )
-            time.sleep(0.5)
-            print('Backwards')
-            actions_q.put( ((Actions.m_back_l,), (Actions.m_back_r,)) )
-            time.sleep(1)
-            print('Stop')
-            actions_q.put( ((Actions.m_halt,),) )
-            time.sleep(0.5)
-            print('Pivot left')
-            actions_q.put( ((Actions.pivot_l,),) )
-            time.sleep(1)
-            print('Pivot right')
-            actions_q.put( ((Actions.pivot_r,),) )
-            time.sleep(1)
-            print('Stop')
-            actions_q.put( ((Actions.m_halt,),) )
-            time.sleep(0.5)
+        # asdf = 0
+        # while(asdf < 3):
+        #     print('Forward')
+        #     actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
+        #     time.sleep(1)
+        #     print('Stop')
+        #     actions_q.put( ((Actions.m_halt,),) )
+        #     time.sleep(0.5)
+        #     print('Backwards')
+        #     actions_q.put( ((Actions.m_back_l,), (Actions.m_back_r,)) )
+        #     time.sleep(1)
+        #     print('Stop')
+        #     actions_q.put( ((Actions.m_halt,),) )
+        #     time.sleep(0.5)
+        #     print('Pivot left')
+        #     actions_q.put( ((Actions.pivot_l,),) )
+        #     time.sleep(1)
+        #     print('Pivot right')
+        #     actions_q.put( ((Actions.pivot_r,),) )
+        #     time.sleep(1)
+        #     print('Stop')
+        #     actions_q.put( ((Actions.m_halt,),) )
+        #     time.sleep(0.5)
             
-            asdf += 1
+        #     asdf += 1
         
         # Make sure claw is not in the way (i.e. lifted):
-        # mob.act_on( (('claw_up'),) )
+        actions_q.put( ((Actions.claw_up,),) )
         
-        # target = finding_target(self.target)
-        # self.target = target
-        # self.set_next_state_callback(nav_smachine.approach_target)
+        target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q)
+        self.target = target
+        self.set_next_state_callback(nav_smachine.approach_target)
     
-    # def on_enter_approach(self):
-    #     decision, nx_st_cb = approaching_target(self.target)
+    def on_enter_approach(self):
+        global actions_q
         
-    #     self.set_next_state_callback(nx_st_cb)
+        nx_st_cb = approaching_target(self.target, actions_q)
+        
+        self.set_next_state_callback(nx_st_cb)
     
     def on_enter_done(self):
         '''
@@ -217,7 +220,7 @@ class NavSMachine_impl(object):
         print('Closing down navigation state machine...')
         print()
 
-    # Function run on state exit:
+    # Functions run on state exit:
     def on_exit_initialising(self):
         print('Navigation state machine RUNNING!')
         print()
