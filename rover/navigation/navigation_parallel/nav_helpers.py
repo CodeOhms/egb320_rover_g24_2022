@@ -182,7 +182,7 @@ class Targets(Enum):
     lander = 5
     sample_and_lander = 6
 
-def finding_target(target, vis_get_bearings, vis_get_distances, actions_q):
+def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q):
     '''
     Find either targets by priorty, or the target specified.
 
@@ -192,9 +192,15 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q):
     If set to 'lander' the function will attempt to find the
     lander.
     '''
+    
+    found_targ = None
 
-    bearings = vis_get_bearings()
-    distances = vis_get_distances()
+    bearings = vis_get_bearings(bearings_q)
+    distances = vis_get_distances(distances_q)
+    if bearings is None or distances is Nones:
+        #print('Bearings is NONE type!')
+        #print()
+        return found_targ
 
     target_i = None # Target indicies in bearings and distances.
     if target == Targets.sample:
@@ -209,7 +215,6 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q):
     # Pivot to find a target:
     targ_bear = None
     targ_dist = None
-    found_targ = None
     for t_i in target_i:
         targ_bear = bearings[t_i]
         targ_dist = distances[t_i]

@@ -1,8 +1,8 @@
 from navigation.navigation_parallel.navigation_parallel_impl import *
 
-def init_impl(vis_to_nav_callbacks, actions_queue):
+def init_impl(vis_to_nav_callbacks, actions_q, bearings_q, distances_q):
     # return init_sync_impl(vis_to_nav_callbacks)
-    return init_parallel_impl(vis_to_nav_callbacks, actions_queue)
+    return init_parallel_impl(vis_to_nav_callbacks, actions_q, bearings_q, distances_q)
 
 def start_impl(nav_process):
     # start_sync_impl()

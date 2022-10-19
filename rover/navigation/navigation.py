@@ -14,8 +14,10 @@ def init():
     global nav_process
 
     actions_q = mob.get_mobility_queue()
-    vis_to_nav_callbacks = (vis.get_bearings, vis.get_distances)
-    nav_process = impl.init_impl(vis_to_nav_callbacks, actions_q)
+    bearings_q = vis.get_bearings_queue()
+    distances_q = vis.get_distances_queue()
+    vis_to_nav_callbacks = (vis.get_bearings_, vis.get_distances_)
+    nav_process = impl.init_impl(vis_to_nav_callbacks, actions_q, bearings_q, distances_q)
 
 def start():
     global nav_process

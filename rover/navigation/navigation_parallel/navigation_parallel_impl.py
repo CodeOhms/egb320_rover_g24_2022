@@ -10,10 +10,12 @@ from mobility.mobility_enums import *
 from navigation.navigation_parallel.nav_helpers import *
 
 class NavigationInternalData(object):
-    def __init__(self, vis_to_nav_callbacks, actions_q, nav_smachine, nav_smachine_impl, retrieved_samples, pf_max):
+    def __init__(self, vis_to_nav_callbacks, actions_q, bearings_q, distances_q, nav_smachine, nav_smachine_impl, retrieved_samples, pf_max):
         self.vis_to_nav_callbacks = vis_to_nav_callbacks
         self.vis_get_bearings, self.vis_get_distances = vis_to_nav_callbacks
         self.actions_q = actions_q
+        self.bearings_q = bearings_q
+        self.distances_q = distances_q
         self.nav_smachine = nav_smachine
         self.nav_smachine_impl = nav_smachine_impl
         self.retrieved_samples = retrieved_samples
@@ -48,7 +50,7 @@ def nav_loop(nav_smachine_impl):
         else:
             cb()
         
-        print(nav_smachine.current_state)
+        #print(nav_smachine.current_state)
         
         loop = do_close_nav_loop(acts_q)
     
@@ -56,7 +58,7 @@ def nav_loop(nav_smachine_impl):
     
     nav_internal_data.nav_smachine.close()
 
-def nav_main(actions_q, vis_to_nav_callbacks):
+def nav_main(actions_q, bearings_q, distances_q, vis_to_nav_callbacks):
     nav_smachine_impl = NavSMachine_impl()
     nav_smachine = NavSMachine(nav_smachine_impl)
     nav_smachine.init()
@@ -65,16 +67,16 @@ def nav_main(actions_q, vis_to_nav_callbacks):
     pf_max = 276.0
     
     nav_internal_data = NavigationInternalData(
-        vis_to_nav_callbacks, actions_q, nav_smachine, nav_smachine_impl, retrieved_samples, pf_max
+        vis_to_nav_callbacks, actions_q, bearings_q, distances_q, nav_smachine, nav_smachine_impl, retrieved_samples, pf_max
     )
     
     nav_smachine_impl.set_nav_internal_data(nav_internal_data)
 
     nav_loop(nav_smachine_impl)
 
-def init_parallel_impl(vis_to_nav_callbacks, actions_queue):
+def init_parallel_impl(vis_to_nav_callbacks, actions_queue, bearings_q, distances_q,):
     actions_q = actions_queue
-    nav_process = Process(target=nav_main, args=(actions_q, vis_to_nav_callbacks))
+    nav_process = Process(target=nav_main, args=(actions_q, bearings_q, distances_q, vis_to_nav_callbacks))
     
     return nav_process
 
@@ -174,13 +176,16 @@ class NavSMachine_impl(object):
         print('Navigation state machine READY!')
         print()
     
-    def on_enter_find(self):        
+    def on_enter_find(self):
+        nav_smachine = self.nav_internal_data.nav_smachine
         actions_q = self.nav_internal_data.actions_q
+        bearings_q = self.nav_internal_data.bearings_q
+        distances_q = self.nav_internal_data.distances_q
         vis_get_bearings = self.nav_internal_data.vis_get_bearings
         vis_get_distances = self.nav_internal_data.vis_get_distances
         
-        print('Entered find state')
-        print()
+        #print('Entered find state')
+        #print()
         
         # asdf = 0
         # while(asdf < 3):
@@ -211,20 +216,24 @@ class NavSMachine_impl(object):
         # Make sure claw is not in the way (i.e. lifted):
         # actions_q.put( ((Actions.claw_up,),) )
         
-        target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q)
-        print('target', target)
-        print()
+        target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q)
+        #print('target', target)
+        #print()
         if target is None:
+            #print('loop back to find state')
+            #print()
             self.set_next_state_callback(nav_smachine.cont_find)
         else:
+            print('find to approach state')
+            print()
             self.target = target
             nav_process = self.nav_internal_data.nav_process
             actions_q = self.nav_internal_data.actions_q
             close_parallel_impl(nav_process, actions_q)
             #self.set_next_state_callback(nav_smachine.approach_target)
         
-        print('Exited find state')
-        print()
+        #print('Exited find state')
+        #print()
     
     def on_enter_approach(self):
         actions_q = self.nav_internal_data.actions_q
