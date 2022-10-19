@@ -3,7 +3,7 @@ from mobility import mobility as mob
 import navigation.navigation_impl as impl 
 
 actions_q = None
-nav_smachine = None
+nav_process = None
 
 def init():
     '''
@@ -11,17 +11,21 @@ def init():
     '''
     
     global actions_q
-    global nav_smachine
+    global nav_process
 
     actions_q = mob.get_mobility_queue()
     vis_to_nav_callbacks = (vis.get_bearings, vis.get_distances)
-    nav_smachine = impl.init_impl(vis_to_nav_callbacks, actions_q)
+    nav_process = impl.init_impl(vis_to_nav_callbacks, actions_q)
 
 def start():
-    impl.start_impl()
+    global nav_process
+    impl.start_impl(nav_process)
 
 def close():
-    impl.close_impl()
+    global actions_q
+    global nav_process
+    
+    impl.close_impl(nav_process, actions_q)
 
 def get_decision():
     return impl.get_decision_impl()

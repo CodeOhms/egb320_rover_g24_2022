@@ -9,23 +9,35 @@ from mobility import mobility as mob
 from mobility.mobility_enums import *
 from navigation.navigation_parallel.nav_helpers import *
 
-loop = None
-nav_process = None
-actions_q = None
-nav_smachine_impl = None
-nav_smachine = None
-vis_get_bearings = None
-vis_get_distances = None
-retrieved_samples = 0
-pf_max = 276
+class NavigationInternalData(object):
+    def __init__(self, vis_to_nav_callbacks, actions_q, nav_smachine, nav_smachine_impl, retrieved_samples, pf_max):
+        self.vis_to_nav_callbacks = vis_to_nav_callbacks
+        self.vis_get_bearings, self.vis_get_distances = vis_to_nav_callbacks
+        self.actions_q = actions_q
+        self.nav_smachine = nav_smachine
+        self.nav_smachine_impl = nav_smachine_impl
+        self.retrieved_samples = retrieved_samples
+        self.pf_max = pf_max
 
-def nav_loop(acts_q):
-    global loop
-    global nav_smachine
-    global nav_smachine_impl
+def do_close_nav_loop(acts_q):
+    try:
+        actions = acts_q.get(block=False)
+        if actions[0] == 'close':
+            # Add back in queue for mobility system to close:
+            acts_q.put( ('close',) )
+            return False
+    except:
+        pass # Nothing in queue, yet
+    return True
+
+def nav_loop(nav_smachine_impl):
+    nav_internal_data = nav_smachine_impl.nav_internal_data
+    acts_q = nav_internal_data.actions_q
+    nav_smachine = nav_internal_data.nav_smachine
+    
+    loop = do_close_nav_loop(acts_q)
     
     # Start the state machine!
-    print(nav_smachine.current_state)
     nav_smachine.start()
     print(nav_smachine.current_state)
     
@@ -35,59 +47,53 @@ def nav_loop(acts_q):
             cb(cb_args)
         else:
             cb()
-    
-    print('CLOSED NAV LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOP')
         
-def init_parallel_impl(vis_to_nav_callbacks, actions_queue):
-    global nav_process
-    global actions_q
-    global loop
+        print(nav_smachine.current_state)
+        
+        loop = do_close_nav_loop(acts_q)
     
-    actions_q = actions_queue
-    loop = True
-    nav_process = Process(target=nav_loop, args=(actions_q,))
+    print('CLOSED NAV LOOP!')
     
-    global nav_smachine_impl
-    global nav_smachine
-    global vis_get_bearings
-    global vis_get_distances
+    nav_internal_data.nav_smachine.close()
 
-    vis_get_bearings, vis_get_distances = vis_to_nav_callbacks
-
+def nav_main(actions_q, vis_to_nav_callbacks):
     nav_smachine_impl = NavSMachine_impl()
     nav_smachine = NavSMachine(nav_smachine_impl)
     nav_smachine.init()
     
-    return nav_smachine
+    retrieved_samples = 0
+    pf_max = 276.0
+    
+    nav_internal_data = NavigationInternalData(
+        vis_to_nav_callbacks, actions_q, nav_smachine, nav_smachine_impl, retrieved_samples, pf_max
+    )
+    
+    nav_smachine_impl.set_nav_internal_data(nav_internal_data)
 
-def start_parallel_impl():
-    global nav_process
+    nav_loop(nav_smachine_impl)
+
+def init_parallel_impl(vis_to_nav_callbacks, actions_queue):
+    actions_q = actions_queue
+    nav_process = Process(target=nav_main, args=(actions_q, vis_to_nav_callbacks))
+    
+    return nav_process
+
+def start_parallel_impl(nav_process):
     nav_process.start()
 
-def close_parallel_impl():
-    global loop
-    global nav_process
-    
-    loop = False
+def close_parallel_impl(nav_process, actions_q):
+    actions_q.put( ('close',) )
     nav_process.join()
-    
-    global nav_smachine
-    nav_smachine.close()
-
-def get_decision_parallel_impl():
-    decision = None
-    try:
-        decision = decisions_q.get()
-    except:
-        pass
-    return decision
-
 
 # State machine functions implementations:
 class NavSMachine_impl(object):
     def __init__(self):
+        self.nav_internal_data = None
         self.nxt_st_cb = (None, None) # 1st index is the callback, 2nd are the args
         self.target = Targets.sample
+    
+    def set_nav_internal_data(self, nav_internal_data):
+        self.nav_internal_data = nav_internal_data
 
     # Functions unrelated to state machine library:
     def close(self):
@@ -168,10 +174,13 @@ class NavSMachine_impl(object):
         print('Navigation state machine READY!')
         print()
     
-    def on_enter_find(self):
-        global actions_q
-        global vis_get_bearings
-        global vis_get_distances
+    def on_enter_find(self):        
+        actions_q = self.nav_internal_data.actions_q
+        vis_get_bearings = self.nav_internal_data.vis_get_bearings
+        vis_get_distances = self.nav_internal_data.vis_get_distances
+        
+        print('Entered find state')
+        print()
         
         # asdf = 0
         # while(asdf < 3):
@@ -203,16 +212,26 @@ class NavSMachine_impl(object):
         # actions_q.put( ((Actions.claw_up,),) )
         
         target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q)
-        self.target = target
-        # self.set_next_state_callback(nav_smachine.approach_target)
+        print('target', target)
+        print()
+        if target is None:
+            self.set_next_state_callback(nav_smachine.cont_find)
+        else:
+            self.target = target
+            nav_process = self.nav_internal_data.nav_process
+            actions_q = self.nav_internal_data.actions_q
+            close_parallel_impl(nav_process, actions_q)
+            #self.set_next_state_callback(nav_smachine.approach_target)
+        
+        print('Exited find state')
+        print()
     
     def on_enter_approach(self):
-        global actions_q
+        actions_q = self.nav_internal_data.actions_q
         
         while(True):
             nx_st_cb = approaching_target(self.target, actions_q)
-        
-        self.set_next_state_callback(nx_st_cb)
+            self.set_next_state_callback(nx_st_cb)
     
     def on_enter_done(self):
         '''

@@ -28,9 +28,7 @@ def mobility_main(mob_q):
     
     # Initialise:
     gpio_internal_data = io_pins.init()
-    print('IN MOB MAIN')
-    print('gpio_internal_data', gpio_internal_data)
-    print('gpio_internal_data.pwm', gpio_internal_data.pwm)
+    print('IN MOBILITY MAIN')
     print()
     
     # Start:
@@ -52,19 +50,14 @@ def mobility_main(mob_q):
             pass # Nothing in queue, yet
 
     # Close:
-    print('ASDFJKWJE0F[W0[=F SOPFJ[WFJPOWJFOPW FOFPOOPFOPF')
+    print('MOBILITY MAIN beginning closing sequence...')
     mobility_q.close()
     io_pins.close()
+    print('MOBILITY MAIN closed!')
 
 def init_parallel_impl():
     global mobility_process
     global mobility_q
-    
-    # Initialise:
-    # io_pins.init()
-    
-    # # Start:
-    # io_pins.start()
     
     mobility_q = Queue()
     mobility_process = Process(target=mobility_main, args=(mobility_q,))
@@ -79,7 +72,7 @@ def close_parallel_impl():
     global mobility_process
     global mobility_q
     
-    print('TELL MOB PROCESS TO CLOSE!!!')
+    print('TELL MOBILITY PROCESS TO CLOSE!!!')
     mobility_q.put( ('close',) )
     mobility_process.join()
 
@@ -134,7 +127,6 @@ def act_on_parallel_impl(gpio_internal_data, actions):
             dc_adjusted = dc_steer_adjust(dc, steer)
             act_m_forward_r(gpio_internal_data, dc_adjusted)
             act_m_forward_l(gpio_internal_data, dc)
-            
             
 
 def act_m_halt(gpio_internal_data):

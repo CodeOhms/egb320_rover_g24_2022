@@ -193,8 +193,6 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q):
     lander.
     '''
 
-    decision = ()
-
     bearings = vis_get_bearings()
     distances = vis_get_distances()
 
@@ -212,17 +210,16 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q):
     targ_bear = None
     targ_dist = None
     found_targ = None
-    while(found_targ is None):
-        for t_i in target_i:
-            targ_bear = bearings[t_i]
-            targ_dist = distances[t_i]
-            if len(targ_bear) == 0 and len(targ_dist) == 0:
-                actions_q.put( ((Actions.pivot_l,),) ) # Keep looking...
-            else:
-                actions_q.put( ((Actions.m_halt,),) ) # Found it! Stop!
-                found_targ = Targets(t_i)
-                break
-
+    for t_i in target_i:
+        targ_bear = bearings[t_i]
+        targ_dist = distances[t_i]
+        if len(targ_bear) == 0 and len(targ_dist) == 0:
+            actions_q.put( ((Actions.pivot_l,),) ) # Keep looking...
+        else:
+            actions_q.put( ((Actions.m_halt,),) ) # Found it! Stop!
+            found_targ = Targets(t_i)
+            break
+        
     return found_targ
 
 def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
