@@ -52,14 +52,11 @@ if __name__ == "__main__":
     print('Initialising systems...')
     print()
 
-    io_pins.init()
     mob.init()
     vis.init()
-    vis_to_nav_callbacks = (vis.get_bearings, vis.get_distances)
-    nav.init(vis_to_nav_callbacks)
+    nav.init()
     # Setup display windows:
 
-    io_pins.start()
     mob.start()
     vis.start(1200)
     nav.start()
@@ -75,7 +72,7 @@ if __name__ == "__main__":
     print('Cleaning up...')
     print()
 
-    io_pins.close()
+    # io_pins.close()
     mob.close()
     vis.close()
     nav.close()

@@ -54,6 +54,8 @@ def start_impl():
 
 def close_impl():
     GPIO.cleanup()
+    print('Cleaned up GPIO.')
+    print()
 
 def servo_claw_impl(angle):
     global claw_servo
@@ -62,6 +64,9 @@ def servo_claw_impl(angle):
     claw_servo.ChangeDutyCycle(duty_cycle)
 
 def motor_halt_impl():
+    print('pwm', pwm)
+    print()
+    
     pwm.ChangeDutyCycle(0)
     pwm2.ChangeDutyCycle(0)
     pwm3.ChangeDutyCycle(0)
@@ -73,6 +78,8 @@ def motor_forward_r_impl(duty_cycle):
     GPIO.output(m_driver_in_4, GPIO.LOW)
 
 def motor_forward_l_impl(duty_cycle):
+    print('pwm', pwm)
+    print()
     pwm.ChangeDutyCycle(duty_cycle)
     # GPIO.output(m_driver_in_1, GPIO.HIGH)
     GPIO.output(m_driver_in_2, GPIO.LOW)

@@ -11,7 +11,7 @@ from navigation.navigation_parallel.nav_helpers import *
 
 loop = None
 nav_process = None
-decisions_q = None
+actions_q = None
 nav_smachine_impl = None
 nav_smachine = None
 vis_get_bearings = None
@@ -19,7 +19,7 @@ vis_get_distances = None
 retrieved_samples = 0
 pf_max = 276
 
-def nav_loop():
+def nav_loop(acts_q):
     global loop
     global nav_smachine
     global nav_smachine_impl
@@ -37,16 +37,17 @@ def nav_loop():
     #     else:
     #         cb()
     
-    print('guiguiguihjvyf')
+    print('CLOSED NAV LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOP')
         
-def init_parallel_impl(vis_to_nav_callbacks):
+def init_parallel_impl(vis_to_nav_callbacks, actions_queue):
     global nav_process
+    global actions_q
     global loop
     
+    actions_q = actions_queue
     loop = True
-    nav_process = Process(target=nav_loop)
+    nav_process = Process(target=nav_loop, args=(actions_q,))
     
-    global decisions_q
     global nav_smachine_impl
     global nav_smachine
     global vis_get_bearings
@@ -54,12 +55,11 @@ def init_parallel_impl(vis_to_nav_callbacks):
 
     vis_get_bearings, vis_get_distances = vis_to_nav_callbacks
 
-    decisions_q = SimpleQueue()
     nav_smachine_impl = NavSMachine_impl()
     nav_smachine = NavSMachine(nav_smachine_impl)
     nav_smachine.init()
     
-    return decisions_q, nav_smachine
+    return nav_smachine
 
 def start_parallel_impl():
     global nav_process
@@ -170,27 +170,57 @@ class NavSMachine_impl(object):
         print()
     
     def on_enter_find(self):
-        print('Forward')
-        mob.act_on( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
-        time.sleep(0.2)
-        print('Stop')
-        mob.act_on( ((Actions.m_halt,),) )
-        time.sleep(0.5)
-        print('Backwards')
-        mob.act_on( ((Actions.m_back_l,), (Actions.m_back_r,)) )
-        time.sleep(0.2)
-        print('Stop')
-        mob.act_on( ((Actions.m_halt,),) )
-        time.sleep(0.5)
-        print('Pivot left')
-        mob.act_on( ((Actions.pivot_l,),) )
-        time.sleep(0.7)
-        print('Pivot right')
-        mob.act_on( ((Actions.pivot_r,),) )
-        time.sleep(0.7)
-        print('Stop')
-        mob.act_on( ((Actions.m_halt,),) )
-    # time.sleep(0.5)
+        global actions_q
+        
+        asdf = 0
+        while(asdf < 3):
+            # time.sleep(1.5)
+            print('Forward')
+            actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
+            time.sleep(1)
+            print('Stop')
+            actions_q.put( ((Actions.m_halt,),) )
+            time.sleep(0.5)
+            print('Backwards')
+            mob.act_on( ((Actions.m_back_l,), (Actions.m_back_r,)) )
+            time.sleep(1)
+            print('Stop')
+            mob.act_on( ((Actions.m_halt,),) )
+            time.sleep(0.5)
+            print('Pivot left')
+            mob.act_on( ((Actions.pivot_l,),) )
+            time.sleep(1)
+            print('Pivot right')
+            mob.act_on( ((Actions.pivot_r,),) )
+            time.sleep(1)
+            print('Stop')
+            mob.act_on( ((Actions.m_halt,),) )
+            time.sleep(0.5)
+            
+            asdf += 1
+        
+        
+        # print('Forward')
+        # mob.act_on( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
+        # time.sleep(0.2)
+        # print('Stop')
+        # mob.act_on( ((Actions.m_halt,),) )
+        # time.sleep(0.5)
+        # print('Backwards')
+        # mob.act_on( ((Actions.m_back_l,), (Actions.m_back_r,)) )
+        # time.sleep(0.2)
+        # print('Stop')
+        # mob.act_on( ((Actions.m_halt,),) )
+        # time.sleep(0.5)
+        # print('Pivot left')
+        # mob.act_on( ((Actions.pivot_l,),) )
+        # time.sleep(0.7)
+        # print('Pivot right')
+        # mob.act_on( ((Actions.pivot_r,),) )
+        # time.sleep(0.7)
+        # print('Stop')
+        # mob.act_on( ((Actions.m_halt,),) )
+        # time.sleep(0.5)
         
         # Make sure claw is not in the way (i.e. lifted):
         # mob.act_on( (('claw_up'),) )
