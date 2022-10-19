@@ -215,6 +215,8 @@ class NavSMachine_impl(object):
         print('target', target)
         print()
         if target is None:
+            print('loop back to find')
+            print()
             self.set_next_state_callback(nav_smachine.cont_find)
         else:
             self.target = target
