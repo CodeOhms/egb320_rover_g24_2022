@@ -5,7 +5,7 @@ from mobility import mobility as mob
 ##########
 # Potential Fields
 
-def goal_potential_field(x_array, bearings, intensity, intensity_max):
+def target_potential_field(x_array, bearings, intensity, intensity_max):
     '''
     Piecewise triangular function.
     '''
@@ -50,7 +50,7 @@ class PF(object):
     
     # Alternative initialiser:
     @classmethod
-    def heading_field(cls, goal_pot_f, haz_pot_f):
+    def init_heading_field(cls, goal_pot_f, haz_pot_f):
         heading_pf = goal_pot_f.y_data - haz_pot_f.y_data
         
         # Clip results below zero:
@@ -75,13 +75,13 @@ class PF(object):
 
 
 # if __name__ == '__main__':
-#     goal_pf = PF(goal_potential_field)
+#     goal_pf = PF(target_potential_field)
 #     haz_pf = PF(hazard_potential_field)
     
 #     goal_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
 #     haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
     
-#     motor_heading_pf = PF.heading_field(goal_pf, haz_pf)
+#     motor_heading_pf = PF.init_heading_field(goal_pf, haz_pf)
     
 #     plt.figure()
 #     plt.plot(goal_pf.x_data, goal_pf.y_data)
@@ -162,17 +162,16 @@ class PF(object):
 #         compiled_PF = compiled_PF + [PF_value]
 #     return compiled_PF
 
-# def navigate_PF(PF):
-#     max = max(PF)
-#     position_of_max = PF.index(max)
-#     bearing = position_of_max - 31
-#     if bearing<0:
-#         movement = (['left_f', 40*(1.0-0.8*abs(bearing)/40)], ['right_f', 40])
-#     elif bearing>0:
-#         movement = (['left_f', 40], ['right_f', 40*(1.0-0.8*abs(bearing)/40)])
-#     else:
-#         movement = (['left_f', 40], ['right_f', 40])
-#     return bearing
+def navigate_pf(mh_pf):
+    pf_steer = mh_pf.get_steer() # Bearing to aim for!
+    dc = None # Use default steering duty cycle.
+    steer_args = (pf_steer, dc)
+    if pf_steer < 0:
+        actions_q.put( ((Actions.steer_l, steer_args),) )
+    elif pf_steer > 0:
+        actions_q.put( ((Actions.steer_r, steer_args),) )
+    else:
+        actions_q.put( ((Actions.forward, dc),) )
 
 ##########
 
@@ -227,9 +226,6 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q):
     return found_targ
 
 def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
-    decision = ()
-    nx_st_cb = None
-    
     bearings = vis_get_bearings()
     distances = vis_get_distances()
     
@@ -246,23 +242,38 @@ def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
     targ_bear = None
     targ_dist = None
     for t_i in target_i:
-        targ_bear = bearings[t_i]
-        targ_dist = distances[t_i]
-        if len(targ_bear) < 1 and len(targ_dist) < 1:
+        targ_bear_list = bearings[t_i]
+        targ_dist_list = distances[t_i]
+        if len(targ_bear_list) < 1 and len(targ_dist_list) < 1:
             actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
             print('Target ' + str(target) + ' lost!')
             break
         else:
-            # Approaching...
-            PF = create_potential_field(2)
-            steering = navigate_PF(PF)
-            
-            # Is it close enough to interact with?:
-            if max(PF) > pf_max:
-                # Make sure target aligned decently:
-                if steering < 4 && steering > -4:
-                    nx_st_cb = (nav_smachine.obtain_sample, None)
+            # Close enough?:
+            if targ_dist <= 7.0:
+                actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
             else:
-                nx_st_cb = (nav_smachine.cont_approach, None)
+                # No, approach...
+                    # Create potential fields:
+                targ_pf = PF(target_potential_field)
+                haz_pf = PF(hazard_potential_field)
+                
+                targ_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
+                haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
+                motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
+                
+                    # Navigate with potential fields:
+                navigate_pf(motor_heading_pf)
+            
+            
+            # PF = create_potential_field(2)
+            # steering = navigate_PF(PF)
+            
+            # # Is it close enough to interact with?:
+            # if max(PF) > pf_max:
+            #     # Make sure target aligned decently:
+            #     if steering < 4 && steering > -4:
+            #         nx_st_cb = (nav_smachine.obtain_sample, None)
+            # else:
+            #     nx_st_cb = (nav_smachine.cont_approach, None)
                    
-        return nx_st_cb

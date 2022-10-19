@@ -200,16 +200,17 @@ class NavSMachine_impl(object):
         #     asdf += 1
         
         # Make sure claw is not in the way (i.e. lifted):
-        actions_q.put( ((Actions.claw_up,),) )
+        # actions_q.put( ((Actions.claw_up,),) )
         
         target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q)
         self.target = target
-        self.set_next_state_callback(nav_smachine.approach_target)
+        # self.set_next_state_callback(nav_smachine.approach_target)
     
     def on_enter_approach(self):
         global actions_q
         
-        nx_st_cb = approaching_target(self.target, actions_q)
+        while(True):
+            nx_st_cb = approaching_target(self.target, actions_q)
         
         self.set_next_state_callback(nx_st_cb)
     

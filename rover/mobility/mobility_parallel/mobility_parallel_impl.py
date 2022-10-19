@@ -5,6 +5,8 @@ import time
 
 mobility_process = None
 mobility_q = None
+dc_default = 30
+dc_steer_default = 40
 
 def mobility_loop(gpio_internal_data, mob_q):
     ret = True
@@ -81,6 +83,9 @@ def close_parallel_impl():
     mobility_q.put( ('close',) )
     mobility_process.join()
 
+def dc_steer_adjust(dc, steer):
+    return dc*(1.0 - 0.8*abs(steer)/dc)
+
 def act_on_parallel_impl(gpio_internal_data, actions):
     print('Do: ', actions)
     print()
@@ -88,24 +93,49 @@ def act_on_parallel_impl(gpio_internal_data, actions):
     # Before every action, a halt is necessary:
     act_m_halt(gpio_internal_data)
     
-    for action in actions:
-        action = action[0]
+    for action_data in actions:
+        action = action_data[0]
+        dc = dc_default
+        if len(action_data) == 2:
+            dc = action_data[1]
         if action is Actions.m_halt:
             act_m_halt(gpio_internal_data)
         elif action is Actions.m_forward_r:
-            act_m_forward_r(gpio_internal_data, 30)
+            act_m_forward_r(gpio_internal_data, dc)
         elif action is Actions.m_forward_l:
-            act_m_forward_l(gpio_internal_data, 30)
+            act_m_forward_l(gpio_internal_data, dc)
         elif action is Actions.m_back_r:
-            act_m_back_r(gpio_internal_data, 30)
+            act_m_back_r(gpio_internal_data, dc)
         elif action is Actions.m_back_l:
-            act_m_back_l(gpio_internal_data, 30)
+            act_m_back_l(gpio_internal_data, dc)
+        elif action is Actions.forward:
+            act_m_forward_l(gpio_internal_data, dc)
+            act_m_forward_r(gpio_internal_data, dc)
+        elif action is Actions.backward:
+            act_m_back_l(gpio_internal_data, dc)
+            act_m_back_r(gpio_internal_data, dc)
         elif action is Actions.pivot_l:
-            act_m_back_r(gpio_internal_data, 30)
-            act_m_forward_l(gpio_internal_data, 30)
+            act_m_back_r(gpio_internal_data, dc)
+            act_m_forward_l(gpio_internal_data, dc)
         elif action is Actions.pivot_r:
-            act_m_back_l(gpio_internal_data, 30)
-            act_m_forward_r(gpio_internal_data, 30)
+            act_m_back_l(gpio_internal_data, dc)
+            act_m_forward_r(gpio_internal_data, dc)
+        elif action is Actions.steer_l:
+            steer, dc = action_data[1]
+            if dc is None:
+                dc = dc_steer_default
+            dc_adjusted = dc_steer_adjust(dc, steer)
+            act_m_forward_l(gpio_internal_data, dc_adjusted)
+            act_m_forward_r(gpio_internal_data, dc)
+        elif action is Actions.steer_r:
+            steer, dc = action_data[1]
+            if dc is None:
+                dc = dc_steer_default
+            dc_adjusted = dc_steer_adjust(dc, steer)
+            act_m_forward_r(gpio_internal_data, dc_adjusted)
+            act_m_forward_l(gpio_internal_data, dc)
+            
+            
 
 def act_m_halt(gpio_internal_data):
     io_pins.motor_halt(gpio_internal_data)
