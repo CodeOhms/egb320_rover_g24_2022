@@ -174,7 +174,6 @@ class NavSMachine_impl(object):
         
         asdf = 0
         while(asdf < 3):
-            # time.sleep(1.5)
             print('Forward')
             actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
             time.sleep(1)
@@ -182,45 +181,22 @@ class NavSMachine_impl(object):
             actions_q.put( ((Actions.m_halt,),) )
             time.sleep(0.5)
             print('Backwards')
-            mob.act_on( ((Actions.m_back_l,), (Actions.m_back_r,)) )
+            actions_q.put( ((Actions.m_back_l,), (Actions.m_back_r,)) )
             time.sleep(1)
             print('Stop')
-            mob.act_on( ((Actions.m_halt,),) )
+            actions_q.put( ((Actions.m_halt,),) )
             time.sleep(0.5)
             print('Pivot left')
-            mob.act_on( ((Actions.pivot_l,),) )
+            actions_q.put( ((Actions.pivot_l,),) )
             time.sleep(1)
             print('Pivot right')
-            mob.act_on( ((Actions.pivot_r,),) )
+            actions_q.put( ((Actions.pivot_r,),) )
             time.sleep(1)
             print('Stop')
-            mob.act_on( ((Actions.m_halt,),) )
+            actions_q.put( ((Actions.m_halt,),) )
             time.sleep(0.5)
             
             asdf += 1
-        
-        
-        # print('Forward')
-        # mob.act_on( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
-        # time.sleep(0.2)
-        # print('Stop')
-        # mob.act_on( ((Actions.m_halt,),) )
-        # time.sleep(0.5)
-        # print('Backwards')
-        # mob.act_on( ((Actions.m_back_l,), (Actions.m_back_r,)) )
-        # time.sleep(0.2)
-        # print('Stop')
-        # mob.act_on( ((Actions.m_halt,),) )
-        # time.sleep(0.5)
-        # print('Pivot left')
-        # mob.act_on( ((Actions.pivot_l,),) )
-        # time.sleep(0.7)
-        # print('Pivot right')
-        # mob.act_on( ((Actions.pivot_r,),) )
-        # time.sleep(0.7)
-        # print('Stop')
-        # mob.act_on( ((Actions.m_halt,),) )
-        # time.sleep(0.5)
         
         # Make sure claw is not in the way (i.e. lifted):
         # mob.act_on( (('claw_up'),) )

@@ -11,5 +11,5 @@ def start_impl():
 def close_impl():
     close_parallel_impl()
 
-def act_on_impl(decision):
-    act_on_parallel_impl(decision)
+# def act_on_impl(actions):
+#     act_on_parallel_impl(actions)

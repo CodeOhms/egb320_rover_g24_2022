@@ -17,8 +17,8 @@ def close():
 def get_mobility_queue():
     return mobility_q
 
-def act_on(decision):
-    impl.act_on_impl(decision)
+# def act_on(actions):
+#     impl.act_on_impl(actions)
 
 # def collect_sample():
 #     impl.collect_sample()
