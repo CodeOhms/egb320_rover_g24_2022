@@ -199,20 +199,20 @@ class NavSMachine_impl(object):
         #print('Entered find state')
         #print()
         
-        asdf = 0
-        while(asdf < 3):
-            print('Forward')
-            actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
-            time.sleep(1)
-            print('Stop')
-            actions_q.put( ((Actions.m_halt,),) )
-            time.sleep(0.5)
-            print('Backwards')
-            actions_q.put( ((Actions.m_back_l,), (Actions.m_back_r,)) )
-            time.sleep(1)
-            print('Stop')
-            actions_q.put( ((Actions.m_halt,),) )
-            time.sleep(0.5)
+        # asdf = 0
+        # while(asdf < 3):
+        #     print('Forward')
+        #     actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
+        #     time.sleep(1)
+        #     print('Stop')
+        #     actions_q.put( ((Actions.m_halt,),) )
+        #     time.sleep(0.5)
+        #     print('Backwards')
+        #     actions_q.put( ((Actions.m_back_l,), (Actions.m_back_r,)) )
+        #     time.sleep(1)
+        #     print('Stop')
+        #     actions_q.put( ((Actions.m_halt,),) )
+        #     time.sleep(0.5)
             # print('Pivot left')
             # actions_q.put( ((Actions.pivot_l,),) )
             # time.sleep(1)
@@ -223,35 +223,39 @@ class NavSMachine_impl(object):
             # actions_q.put( ((Actions.m_halt,),) )
             # time.sleep(0.5)
             
-            asdf += 1
+            # asdf += 1
         
         # Make sure claw is not in the way (i.e. lifted):
         # actions_q.put( ((Actions.claw_up,),) )
         
-        # target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q)
-        # #print('target', target)
-        # #print()
-        # if target is None:
-        #     #print('loop back to find state')
-        #     #print()
-        #     self.set_next_state_callback(nav_smachine.cont_find)
-        # else:
-        #     print('find to approach state')
-        #     print()
-        #     self.target = target
-        #     nav_process = self.nav_internal_data.nav_process
-        #     actions_q = self.nav_internal_data.actions_q
-        #     close_parallel_impl(nav_process, actions_q)
-        #     #self.set_next_state_callback(nav_smachine.approach_target)
+        target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q)
+        #print('target', target)
+        #print()
+        if target is None:
+            #print('loop back to find state')
+            #print()
+            self.set_next_state_callback(nav_smachine.cont_find)
+        else:
+            print('find to approach state')
+            print()
+            self.target = target
+            nav_process = self.nav_internal_data.nav_process
+            actions_q = self.nav_internal_data.actions_q
+            self.set_next_state_callback(nav_smachine.approach_target)
         
         # #print('Exited find state')
         # #print()
     
     def on_enter_approach(self):
+        nav_smachine = self.nav_internal_data.nav_smachine
         actions_q = self.nav_internal_data.actions_q
+        vis_get_bearings = self.nav_internal_data.vis_get_bearings
+        vis_get_distances = self.nav_internal_data.vis_get_distances
         
-        while(True):
-            nx_st_cb = approaching_target(self.target, actions_q)
+        nx_st_cb = approaching_target(self.target, vis_get_bearings, vis_get_distances, actions_q)
+        if nx_st_cb is None:
+            self.set_next_state_callback(nav_smachine.cont_approach)
+        else:    
             self.set_next_state_callback(nx_st_cb)
     
     def on_enter_done(self):
@@ -266,6 +270,8 @@ class NavSMachine_impl(object):
         print('Navigation state machine RUNNING!')
         print()
     
+    def on_exit_approach(self):
+        pass
     
     def on_exit_done(self):
         print('Navigation state machine CLOSED!')

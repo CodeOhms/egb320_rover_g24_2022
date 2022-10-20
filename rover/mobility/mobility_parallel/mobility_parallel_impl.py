@@ -5,7 +5,7 @@ import time
 
 mobility_process = None
 mobility_q = None
-dc_default = 70
+dc_default = 30
 dc_steer_default = 40
 
 def mobility_loop(gpio_internal_data, mob_q):

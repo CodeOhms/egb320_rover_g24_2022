@@ -1,3 +1,4 @@
+import numpy as np
 from enum import Enum
 from mobility.mobility_enums import *
 from mobility import mobility as mob
@@ -38,7 +39,7 @@ def hazard_potential_field(x_array, bearings, intensity, intensity_max):
     return h_pf_total
 
 class PF(object):
-    def __init__(self, pf_function, bearing_range=(-180,180), num_samples=360, y_data=None):
+    def __init__(self, pf_function, bearing_range=(-90,90), num_samples=360, y_data=None):
         self.pf_function = pf_function
         self.bearing_range = bearing_range
         b_min, b_max = bearing_range
@@ -70,6 +71,10 @@ class PF(object):
         pf_res[pf_res>intensity_max] = intensity_max
         
         self.y_data = pf_res
+    
+    def get_steer(self):
+        return np.max(self.y_data)
+        
 
 
 
@@ -162,7 +167,7 @@ class PF(object):
 #         compiled_PF = compiled_PF + [PF_value]
 #     return compiled_PF
 
-def navigate_pf(mh_pf):
+def navigate_pf(mh_pf, actions_q):
     pf_steer = mh_pf.get_steer() # Bearing to aim for!
     dc = None # Use default steering duty cycle.
     steer_args = (pf_steer, dc)
@@ -239,6 +244,8 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
 def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
     bearings = vis_get_bearings()
     distances = vis_get_distances()
+    if bearings is None or distances is None:
+        return None
     
     target_i = None # Target indicies in bearings and distances.
     if target == Targets.sample:
@@ -252,29 +259,35 @@ def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
     
     targ_bear = None
     targ_dist = None
-    for t_i in target_i:
-        targ_bear_list = bearings[t_i]
-        targ_dist_list = distances[t_i]
+    for tl_i in target_i:
+        targ_bear_list = bearings[tl_i]
+        targ_dist_list = distances[tl_i]
         if len(targ_bear_list) < 1 and len(targ_dist_list) < 1:
             actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
             print('Target ' + str(target) + ' lost!')
             break
         else:
-            # Close enough?:
-            if targ_dist <= 7.0:
-                actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
-            else:
-                # No, approach...
-                    # Create potential fields:
-                targ_pf = PF(target_potential_field)
-                haz_pf = PF(hazard_potential_field)
+            for t_i in range(len(targ_bear_list)):
+                targ_bear = targ_bear_list[t_i]
+                targ_dist = targ_dist_list[t_i]
                 
-                targ_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
-                haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
-                motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
-                
-                    # Navigate with potential fields:
-                navigate_pf(motor_heading_pf)
+                # Close enough?:
+                if targ_dist <= 7.0:
+                    actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
+                else:
+                    # No, approach...
+                        # Create potential fields:
+                    targ_pf = PF(target_potential_field)
+                    haz_pf = PF(hazard_potential_field)
+                    
+                    targ_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
+                    haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
+                    motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
+                    
+                        # Navigate with potential fields:
+                    navigate_pf(motor_heading_pf, actions_q)
+            
+            return None
             
             
             # PF = create_potential_field(2)
