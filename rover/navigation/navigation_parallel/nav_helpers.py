@@ -200,17 +200,8 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
     
     found_targ = None
 
-    bearings = vis_get_bearings()
-    distances = vis_get_distances()
-    # bearings = vis_get_bearings(bearings_q)
-    # distances = vis_get_distances(distances_q)
-    # print('bears_q size', bearings_q.qsize())
-    # print()
-    # bearings = None
-    # try:
-    #     bearings = bearings_q.get(block=False)
-    # except:
-    #     pass
+    bearings = vis_get_bearings(bearings_q)
+    distances = vis_get_distances(distances_q)
     if bearings is None or distances is None:
         #print('Bearings is NONE type!')
         #print()
