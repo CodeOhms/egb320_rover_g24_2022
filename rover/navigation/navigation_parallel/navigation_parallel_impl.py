@@ -117,7 +117,9 @@ class NavSMachine_impl(object):
     def on_approach_target(self):
         pass
 
-    # def on_obtain_sample(self):
+    def on_obtain_sample(self):
+        pass
+    
     #     # Move claw down, and stop:
     #     decision = (('stop'), ('claw_down'))
     #     # Need to provide decision and stop here first:
@@ -237,10 +239,11 @@ class NavSMachine_impl(object):
     
     def on_enter_approach(self):
         actions_q = self.nav_internal_data.actions_q
-        
-        while(True):
-            nx_st_cb = approaching_target(self.target, actions_q)
-            self.set_next_state_callback(nx_st_cb)
+        approaching = True
+        while(approaching==True):
+            approaching = approaching_target(self.target, actions_q)
+        if self.target == Targets.sample:
+            #self.set_next_state_callback(nav_smachine.obtain_sample)
     
     def on_enter_done(self):
         '''
