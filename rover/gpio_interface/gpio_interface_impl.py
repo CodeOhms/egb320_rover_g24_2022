@@ -44,8 +44,12 @@ def init_impl():
     pwm3 = GPIO.PWM(m_driver_in_3, 100)
     pwm4 = GPIO.PWM(m_driver_in_4, 100)
     pwms = (pwm, pwm2, pwm3, pwm4)
+    m_driver_inputs = (m_driver_in_1, m_driver_in_2, m_driver_in_3, m_driver_in_4)
     
-    gpio_internal_data = GpioInternalData(None, m_driver_inputs, pwms)
+    gpio_internal_data = GpioInternalData(None,  m_driver_inputs, pwms)
+    print('gpio_internal_data', gpio_internal_data)
+    print('gpio_internal_data.pwm', gpio_internal_data.pwm)
+    print()
     return gpio_internal_data
 
 def start_impl(internal_data):

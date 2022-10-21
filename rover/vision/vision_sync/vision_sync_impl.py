@@ -73,8 +73,6 @@ def init_sync_impl(cam_res):
     vision_queue = vis_fifo_q
     bearings_q = Queue()
     distances_q = Queue()
-    print('bearings_q orig', bearings_q)
-    print()
 
     # Setup display windows:
     cv.namedWindow("Frame")

@@ -200,17 +200,8 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
     
     found_targ = None
 
-    bearings = vis_get_bearings()
-    distances = vis_get_distances()
-    # bearings = vis_get_bearings(bearings_q)
-    # distances = vis_get_distances(distances_q)
-    # print('bears_q size', bearings_q.qsize())
-    # print()
-    # bearings = None
-    # try:
-    #     bearings = bearings_q.get(block=False)
-    # except:
-    #     pass
+    bearings = vis_get_bearings(bearings_q)
+    distances = vis_get_distances(distances_q)
     if bearings is None or distances is None:
         #print('Bearings is NONE type!')
         #print()
@@ -259,35 +250,29 @@ def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
     
     targ_bear = None
     targ_dist = None
-    for tl_i in target_i:
-        targ_bear_list = bearings[tl_i]
-        targ_dist_list = distances[tl_i]
+    for t_i in target_i:
+        targ_bear_list = bearings[t_i]
+        targ_dist_list = distances[t_i]
         if len(targ_bear_list) < 1 and len(targ_dist_list) < 1:
             actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
             print('Target ' + str(target) + ' lost!')
             break
         else:
-            for t_i in range(len(targ_bear_list)):
-                targ_bear = targ_bear_list[t_i]
-                targ_dist = targ_dist_list[t_i]
+            # Close enough?:
+            if targ_dist <= 7.0:
+                actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
+            else:
+                # No, approach...
+                    # Create potential fields:
+                targ_pf = PF(target_potential_field)
+                haz_pf = PF(hazard_potential_field)
                 
-                # Close enough?:
-                if targ_dist <= 7.0:
-                    actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
-                else:
-                    # No, approach...
-                        # Create potential fields:
-                    targ_pf = PF(target_potential_field)
-                    haz_pf = PF(hazard_potential_field)
-                    
-                    targ_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
-                    haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
-                    motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
-                    
-                        # Navigate with potential fields:
-                    navigate_pf(motor_heading_pf, actions_q)
-            
-            return None
+                targ_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
+                haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
+                motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
+                
+                    # Navigate with potential fields:
+                navigate_pf(motor_heading_pf)
             
             
             # PF = create_potential_field(2)

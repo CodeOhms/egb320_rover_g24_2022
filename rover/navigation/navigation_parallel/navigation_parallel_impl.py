@@ -46,19 +46,14 @@ def nav_loop(nav_smachine_impl):
     
     while(loop):
         cb, cb_args = nav_smachine_impl.get_next_state_callback()
-        if cb is None:
-            print('Next state callback is None type!')
-            print('Closing state machine!')
-            print()
-            
-            loop = False
+        if cb_args is not None:
+            cb(cb_args)
         else:
-            if cb_args is not None:
-                cb(cb_args)
-            else:
-                cb()
-            #print(nav_smachine.current_state)
-            loop = do_close_nav_loop(acts_q)
+            cb()
+        
+        #print(nav_smachine.current_state)
+        
+        loop = do_close_nav_loop(acts_q)
     
     print('CLOSED NAV LOOP!')
     
@@ -70,9 +65,6 @@ def nav_main(actions_q, bearings_q, distances_q, vis_to_nav_callbacks):
     nav_smachine_impl = NavSMachine_impl()
     nav_smachine = NavSMachine(nav_smachine_impl)
     nav_smachine.init()
-    
-    print('bearings_q nav process', bearings_q)
-    print()
     
     retrieved_samples = 0
     pf_max = 276.0
@@ -213,17 +205,17 @@ class NavSMachine_impl(object):
         #     print('Stop')
         #     actions_q.put( ((Actions.m_halt,),) )
         #     time.sleep(0.5)
-            # print('Pivot left')
-            # actions_q.put( ((Actions.pivot_l,),) )
-            # time.sleep(1)
-            # print('Pivot right')
-            # actions_q.put( ((Actions.pivot_r,),) )
-            # time.sleep(1)
-            # print('Stop')
-            # actions_q.put( ((Actions.m_halt,),) )
-            # time.sleep(0.5)
+        #     print('Pivot left')
+        #     actions_q.put( ((Actions.pivot_l,),) )
+        #     time.sleep(1)
+        #     print('Pivot right')
+        #     actions_q.put( ((Actions.pivot_r,),) )
+        #     time.sleep(1)
+        #     print('Stop')
+        #     actions_q.put( ((Actions.m_halt,),) )
+        #     time.sleep(0.5)
             
-            # asdf += 1
+        #     asdf += 1
         
         # Make sure claw is not in the way (i.e. lifted):
         # actions_q.put( ((Actions.claw_up,),) )
