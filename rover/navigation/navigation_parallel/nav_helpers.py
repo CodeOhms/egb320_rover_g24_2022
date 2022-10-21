@@ -77,7 +77,7 @@ class PF(object):
 # if __name__ == '__main__':
 #     goal_pf = PF(target_potential_field)
 #     haz_pf = PF(hazard_potential_field)
-    
+      
 #     goal_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
 #     haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
     
@@ -162,7 +162,7 @@ class PF(object):
 #         compiled_PF = compiled_PF + [PF_value]
 #     return compiled_PF
 
-def navigate_pf(mh_pf):
+def navigate_pf(mh_pf, actions_q):
     pf_steer = mh_pf.get_steer() # Bearing to aim for!
     dc = None # Use default steering duty cycle.
     steer_args = (pf_steer, dc)
@@ -230,43 +230,58 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
 def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
     bearings = vis_get_bearings()
     distances = vis_get_distances()
+    stopping_distance = 7.0     #default until check function can be implemented
     
     target_i = None # Target indicies in bearings and distances.
     if target == Targets.sample:
         target_i = [2]
+        stopping_distance = 7.0
     elif target == Targets.rock:
         target_i = [4]
+        stopping_distance = 3.0
     elif target == Targets.lander:
         target_i = [5]
+        stopping_distance = 2.0
     else:
         raise("Expected either Targets.sample or Targets.lander for the `target` argument!")
     
-    targ_bear = None
-    targ_dist = None
+    targ_bear_list = None
+    targ_dist_list = None
+    haz_bear_list = []
+    haz_dist_list = []
     for t_i in target_i:
         targ_bear_list = bearings[t_i]
         targ_dist_list = distances[t_i]
-        if len(targ_bear_list) < 1 and len(targ_dist_list) < 1:
-            actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
-            print('Target ' + str(target) + ' lost!')
-            break
+    for h_i in [2, 3, 4]:
+        #classifies all non targets as hazards
+        if h_i in target_i:
+            continue
         else:
-            # Close enough?:
-            if targ_dist <= 7.0:
-                actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
-            else:
-                # No, approach...
-                    # Create potential fields:
-                targ_pf = PF(target_potential_field)
-                haz_pf = PF(hazard_potential_field)
-                
-                targ_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
-                haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
-                motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
-                
-                    # Navigate with potential fields:
-                navigate_pf(motor_heading_pf)
+            haz_bear_list = haz_bear_list + tuple(bearings[h_i])
+            haz_dist_list = haz_bear_list + distances[h_i]
+    if len(targ_bear_list) < 1 and len(targ_dist_list) < 1:
+        actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
+        print('Target ' + str(target) + ' lost!')
+        break
+    else:
+        # Close enough?:
+        if value in targ_dist_list <= stopping_distance:
+            actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
+            return False
             
+        else:
+            # No, approach...
+                # Create potential fields:
+            targ_pf = PF(target_potential_field)
+            haz_pf = PF(hazard_potential_field)
+            
+            targ_pf.gen_potential_field(tuple(targ_bear_list), tuple(targ_dist_list))
+            haz_pf.gen_potential_field(tuple(haz_bear_list), tuple(haz_dist_list))
+            motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
+            
+                # Navigate with potential fields:
+            navigate_pf(motor_heading_pf, actions_q)
+            return True
             
             # PF = create_potential_field(2)
             # steering = navigate_PF(PF)
