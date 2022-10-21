@@ -49,10 +49,24 @@ def get_overlays():
 def display_overlays(overlays):
     return impl.display_overlays_impl(overlays)
 
+def get_bearings_queue():
+    global bearings_q
+    return bearings_q
+
 def get_bearings():
     global bearings_q
     return impl.get_bearings_impl(bearings_q)
 
+def get_bearings_(bearings_q):
+    return impl.get_bearings_impl_(bearings_q)
+
+def get_distances_queue():
+    global distances_q
+    return distances_q
+
 def get_distances():
     global distances_q
     return impl.get_distances_impl(distances_q)
+
+def get_distances_(distances_q):
+    return impl.get_distances_impl_(distances_q)

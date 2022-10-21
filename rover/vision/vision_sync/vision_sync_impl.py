@@ -1,5 +1,6 @@
 import copy
-from queue import SimpleQueue
+# from queue import Queue
+from multiprocessing import Queue
 import numpy as np
 import numexpr as ne
 import cv2 as cv
@@ -65,13 +66,15 @@ def init_sync_impl(cam_res):
     regions_properties = tuple(regions_properties)
 
     vid_s = init_video_stream(cam_res)
-    f_fifo_q = SimpleQueue()
-    vis_fifo_q = SimpleQueue()
+    f_fifo_q = Queue()
+    vis_fifo_q = Queue()
     video_stream = copy.copy(vid_s)
     frame_queue = f_fifo_q
     vision_queue = vis_fifo_q
-    bearings_q = SimpleQueue()
-    distances_q = SimpleQueue()
+    bearings_q = Queue()
+    distances_q = Queue()
+    print('bearings_q orig', bearings_q)
+    print()
 
     # Setup display windows:
     cv.namedWindow("Frame")
@@ -119,6 +122,9 @@ def get_frame_sync_impl(f_q):
     global vision_queue
     global bearings_q
     global distances_q
+    
+    #print('bearings_q', bearings_q)
+    #print()
 
     frame = get_frame(video_stream)
     f_q.put(frame) # Put on queue so that it can be processed later,
@@ -159,11 +165,39 @@ def display_overlays_sync_impl(overlays):
     return ret
 
 def get_bearings_sync_impl(bears_q):
-    return bears_q.get()
+    ret = None
+    try:
+        ret = bears_q.get(block=False)
+    except:
+        pass
+    return ret
+
+def get_bearings_sync_impl_(bears_q):
+    print('bears_q size', bears_q.qsize())
+    print()
+    
+    ret = None
+    try:
+        ret = bears_q.get(block=False)
+    except:
+        pass
+    return ret
 
 def get_distances_sync_impl(dists_q):
-    return dists_q.get()
+    ret = None
+    try:
+        ret = dists_q.get(block=False)
+    except:
+        pass
+    return ret
 
+def get_distances_sync_impl_(dists_q):
+    ret = None
+    try:
+        ret = dists_q.get(block=False)
+    except:
+        pass
+    return ret
 
 def superpx_slic_trans(img, num_regions=40):
     slic = Slic(num_components=num_regions, compactness=10, min_size_factor=0) # Supposedly gets FPS increase, but I don't see any...
