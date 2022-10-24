@@ -1,40 +1,29 @@
 import RPi.GPIO as GPIO
 import copy
 
-# claw_servo = None
-# m_driver_in_1 = 14
-# m_driver_in_2 = 15
-# m_driver_in_3 = 18
-# m_driver_in_4 = 17
-# pwm = None
-# pwm2 = None
-# pwm3 = None
-# pwm4 = None
-
 class GpioInternalData(object):
-    def __init__(self, c_servo, pwms):
-        self.m_driver_in_1 = 14
-        self.m_driver_in_2 = 15
-        self.m_driver_in_3 = 18
-        self.m_driver_in_4 = 17
-        
+    def __init__(self, c_servo, m_driver_inputs, pwms):
+        self.m_driver_in_1, self.m_driver_in_2, self.m_driver_in_3, self.m_driver_in_4 = m_driver_inputs
         self.claw_servo = c_servo
-        print('pwms', pwms)
-        print()
         self.pwm, self.pwm2, self.pwm3, self.pwm4 = pwms
-        print('pwm in internal data', self.pwm)
 
 def init_impl():
-    # global claw_servo
-    # global pwm 
-    # global pwm2
-    # global pwm3
-    # global pwm4
-    
-    m_driver_in_1 = 14
-    m_driver_in_2 = 15
+    # in1 green 
+    # in2 yellow
+    # in3 dark purple
+    # in4 gray
+    m_driver_in_1 = 27
+    m_driver_in_2 = 22
     m_driver_in_3 = 18
     m_driver_in_4 = 17
+    # m_driver_in_1 = 14
+    # m_driver_in_2 = 15
+    # m_driver_in_3 = 17
+    # m_driver_in_4 = 18
+    
+    #servo bcm 22
+    
+    m_driver_inputs = (m_driver_in_1, m_driver_in_2, m_driver_in_3, m_driver_in_4)
     
     GPIO.setmode(GPIO.BCM)
     
@@ -54,20 +43,12 @@ def init_impl():
     GPIO.setup(m_driver_in_4, GPIO.OUT)
     pwm3 = GPIO.PWM(m_driver_in_3, 100)
     pwm4 = GPIO.PWM(m_driver_in_4, 100)
+    pwms = (pwm, pwm2, pwm3, pwm4)
     
-    gpio_internal_data = GpioInternalData(None, (pwm, pwm2, pwm3, pwm4))
-    print('gpio_internal_data', gpio_internal_data)
-    print('gpio_internal_data.pwm', gpio_internal_data.pwm)
-    print()
+    gpio_internal_data = GpioInternalData(None, m_driver_inputs, pwms)
     return gpio_internal_data
 
 def start_impl(internal_data):
-    # global claw_servo
-    # global pwm 
-    # global pwm2
-    # global pwm3
-    # global pwm4
-    
     # Start at duty cycle of 0 (stopped):
     internal_data.pwm.start(0)
     internal_data.pwm2.start(0)
@@ -88,10 +69,7 @@ def servo_claw_impl(angle):
     duty_cycle = angle/180*100
     claw_servo.ChangeDutyCycle(duty_cycle)
 
-def motor_halt_impl(internal_data):    
-    print('pwm', internal_data.pwm)
-    print()
-    
+def motor_halt_impl(internal_data):
     internal_data.pwm.ChangeDutyCycle(0)
     internal_data.pwm2.ChangeDutyCycle(0)
     internal_data.pwm3.ChangeDutyCycle(0)
@@ -103,8 +81,6 @@ def motor_forward_r_impl(internal_data, duty_cycle):
     GPIO.output(internal_data.m_driver_in_4, GPIO.LOW)
 
 def motor_forward_l_impl(internal_data, duty_cycle):
-    print('pwm', internal_data.pwm)
-    print()
     internal_data.pwm.ChangeDutyCycle(duty_cycle)
     # GPIO.output(m_driver_in_1, GPIO.HIGH)
     GPIO.output(internal_data.m_driver_in_2, GPIO.LOW)

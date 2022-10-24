@@ -45,6 +45,9 @@ def nav_loop(nav_smachine_impl):
     
     while(loop):
         cb, cb_args = nav_smachine_impl.get_next_state_callback()
+        if cb is None:
+            loop = False
+            continue
         if cb_args is not None:
             cb(cb_args)
         else:
@@ -189,50 +192,51 @@ class NavSMachine_impl(object):
         #print('Entered find state')
         #print()
         
-        # asdf = 0
-        # while(asdf < 3):
-        #     print('Forward')
-        #     actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
-        #     time.sleep(1)
-        #     print('Stop')
-        #     actions_q.put( ((Actions.m_halt,),) )
-        #     time.sleep(0.5)
-        #     print('Backwards')
-        #     actions_q.put( ((Actions.m_back_l,), (Actions.m_back_r,)) )
-        #     time.sleep(1)
-        #     print('Stop')
-        #     actions_q.put( ((Actions.m_halt,),) )
-        #     time.sleep(0.5)
-        #     print('Pivot left')
-        #     actions_q.put( ((Actions.pivot_l,),) )
-        #     time.sleep(1)
-        #     print('Pivot right')
-        #     actions_q.put( ((Actions.pivot_r,),) )
-        #     time.sleep(1)
-        #     print('Stop')
-        #     actions_q.put( ((Actions.m_halt,),) )
-        #     time.sleep(0.5)
+        asdf = 0
+        while(asdf < 3):
+            print('Forward')
+            actions_q.put( ((Actions.m_forward_l,), (Actions.m_forward_r,)) )
+            time.sleep(1)
+            print('Stop')
+            actions_q.put( ((Actions.m_halt,),) )
+            time.sleep(0.5)
+            print('Backwards')
+            actions_q.put( ((Actions.m_back_l,), (Actions.m_back_r,)) )
+            time.sleep(1)
+            print('Stop')
+            actions_q.put( ((Actions.m_halt,),) )
+            time.sleep(0.5)
+            print('Pivot left')
+            actions_q.put( ((Actions.pivot_l,),) )
+            time.sleep(1)
+            print('Pivot right')
+            actions_q.put( ((Actions.pivot_r,),) )
+            time.sleep(1)
+            print('Stop')
+            actions_q.put( ((Actions.m_halt,),) )
+            time.sleep(0.5)
             
-        #     asdf += 1
+            asdf += 1
+        self.set_next_state_callback(None) # Close!!!
         
         # Make sure claw is not in the way (i.e. lifted):
         # actions_q.put( ((Actions.claw_up,),) )
         
-        target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q)
-        #print('target', target)
-        #print()
-        if target is None:
-            #print('loop back to find state')
-            #print()
-            self.set_next_state_callback(nav_smachine.cont_find)
-        else:
-            print('find to approach state')
-            print()
-            self.target = target
-            nav_process = self.nav_internal_data.nav_process
-            actions_q = self.nav_internal_data.actions_q
-            close_parallel_impl(nav_process, actions_q)
-            #self.set_next_state_callback(nav_smachine.approach_target)
+        # target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q)
+        # #print('target', target)
+        # #print()
+        # if target is None:
+        #     #print('loop back to find state')
+        #     #print()
+        #     self.set_next_state_callback(nav_smachine.cont_find)
+        # else:
+        #     print('find to approach state')
+        #     print()
+        #     self.target = target
+        #     nav_process = self.nav_internal_data.nav_process
+        #     actions_q = self.nav_internal_data.actions_q
+        #     close_parallel_impl(nav_process, actions_q)
+        #     #self.set_next_state_callback(nav_smachine.approach_target)
         
         #print('Exited find state')
         #print()
