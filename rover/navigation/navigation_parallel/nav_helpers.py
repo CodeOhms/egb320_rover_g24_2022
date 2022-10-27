@@ -270,11 +270,16 @@ def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
         if h_i == target_i:
             continue
         else:
-            haz_b = bearings[h_i]
+            haz_b = bearings[h_i][:2]
             haz_d = distances[h_i]
-            if len(haz_b) > 0 or len(haz_d) > 0: 
-                haz_bear_tuples.append(haz_b)
+            print('haz_b', bearings[h_i], 'haz_d', haz_d)
+            if len(haz_b) > 0 or len(haz_d) > 0:
                 haz_dist_tuples.append(haz_d)
+                for h_b in haz_b:
+                    print(h_b[:2])
+                    haz_bear_tuples.append(h_b[:2])
+            else:
+                return False
     # Close enough?:
     for dist in targ_dist_tuples:
         if dist <= stopping_distance:
