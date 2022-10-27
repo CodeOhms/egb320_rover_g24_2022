@@ -12,14 +12,11 @@ def init_impl():
     # in2 yellow
     # in3 dark purple
     # in4 gray
-    m_driver_in_1 = 22
-    m_driver_in_2 = 27
-    m_driver_in_3 = 18
-    m_driver_in_4 = 17
-    # m_driver_in_1 = 14
-    # m_driver_in_2 = 15
-    # m_driver_in_3 = 17
-    # m_driver_in_4 = 18
+    
+    m_driver_in_1 = 23
+    m_driver_in_2 = 12
+    m_driver_in_3 = 22
+    m_driver_in_4 = 13
     
     #servo bcm 22
     
@@ -76,21 +73,35 @@ def motor_halt_impl(internal_data):
     internal_data.pwm4.ChangeDutyCycle(0)
 
 def motor_forward_r_impl(internal_data, duty_cycle):
-    internal_data.pwm3.ChangeDutyCycle(duty_cycle)
-    # GPIO.output(m_driver_in_3, GPIO.HIGH)
-    GPIO.output(internal_data.m_driver_in_4, GPIO.LOW)
+    internal_data.pwm.ChangeDutyCycle(duty_cycle)
 
 def motor_forward_l_impl(internal_data, duty_cycle):
-    internal_data.pwm.ChangeDutyCycle(duty_cycle)
-    # GPIO.output(m_driver_in_1, GPIO.HIGH)
-    GPIO.output(internal_data.m_driver_in_2, GPIO.LOW)
+    internal_data.pwm3.ChangeDutyCycle(duty_cycle)
 
 def motor_back_r_impl(internal_data, duty_cycle):
-    GPIO.output(internal_data.m_driver_in_3, GPIO.LOW)
-    # GPIO.output(m_driver_in_4, GPIO.HIGH)
-    internal_data.pwm4.ChangeDutyCycle(duty_cycle)
+    internal_data.pwm2.ChangeDutyCycle(duty_cycle)
 
 def motor_back_l_impl(internal_data, duty_cycle):
-    GPIO.output(internal_data.m_driver_in_1, GPIO.LOW)
-    # GPIO.output(m_driver_in_2, GPIO.HIGH)
+    internal_data.pwm4.ChangeDutyCycle(duty_cycle)
+
+def motor_pivot_l_impl(internal_data, duty_cycle):
     internal_data.pwm2.ChangeDutyCycle(duty_cycle)
+    internal_data.pwm3.ChangeDutyCycle(duty_cycle)
+    
+    internal_data.pwm.ChangeDutyCycle(0)
+    internal_data.pwm4.ChangeDutyCycle(0)
+
+# def motor_forward_r_impl(internal_data, duty_cycle):
+#     pass
+
+# def motor_forward_l_impl(internal_data, duty_cycle):
+#     internal_data.pwm2.ChangeDutyCycle(duty_cycle)
+#     # internal_data.pwm2.ChangeDutyCycle(0)
+
+# def motor_back_r_impl(internal_data, duty_cycle):
+#     # internal_data.pwm3.ChangeDutyCycle(0)
+#     internal_data.pwm4.ChangeDutyCycle(duty_cycle)
+
+# def motor_back_l_impl(internal_data, duty_cycle):
+#     # internal_data.pwm.ChangeDutyCycle(0)
+#     internal_data.pwm2.ChangeDutyCycle(duty_cycle)

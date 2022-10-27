@@ -19,15 +19,15 @@ f_scale = 4
 f_height, f_width = (0, 0)
 
 # For Pi camera v2.1:
-# fov = (62.2, 48.8) # degrees
-# focal_len = 3.04e-1 # cm
-# px_height = 1.12e-4 # cm/px
-# native_ver_px_height = 2464 # px
-# For Logitech webcam:
 fov = (62.2, 48.8) # degrees
-focal_len = 3.08e-1 # cm
-px_height = 0.00017097701149425287 # cm/px
-native_ver_px_height = 960 # px
+focal_len = 3.04e-1 # cm
+px_height = 1.12e-4 # cm/px
+native_ver_px_height = 2464 # px
+# For Logitech webcam:
+# fov = (62.2, 48.8) # degrees
+# focal_len = 3.08e-1 # cm
+# px_height = 0.00017097701149425287 # cm/px
+# native_ver_px_height = 960 # px
 res_ver_scale = 0
 
 obj_actual_heights = (None, None, 4.25, 15, 7, 4.5) # cm. Wall and floor, sample, obstacle, rock, lander
@@ -39,10 +39,10 @@ obj_actual_heights = (None, None, 4.25, 15, 7, 4.5) # cm. Wall and floor, sample
 
 num_classes = 6 # Wall and floor, sample, obstacle, rock, lander
 
-sat_mids = (0, 0, 0.65, 0.45, 0.95, 1.0)
+sat_mids = (0.64, 0, 0.65, 0.45, 0.95, 1.0)
 # Hues (in degrees): 180, 220, 2, 110, 207
 hue_mids = (
-    3.14159265358979323846, 3.83972435438752506923, 0.03490658503988659154,
+    1.71042266695444298539, 3.14159265358979323846, 0.03490658503988659154,
     1.65806278939461309808, 3.56047167406843233692, 1.04719755119659774615
 ) # Wall and floor, sample, obstacle, rock, lander
 sat_hue_cnums = ne.evaluate('sat_mids*exp(complex(0,hue_mids))')

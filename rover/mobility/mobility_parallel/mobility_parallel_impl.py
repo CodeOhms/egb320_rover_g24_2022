@@ -5,7 +5,7 @@ import time
 
 mobility_process = None
 mobility_q = None
-dc_default = 100
+dc_default = 50
 dc_steer_default = 60
 
 def mobility_loop(gpio_internal_data, mob_q):
@@ -108,10 +108,11 @@ def act_on_parallel_impl(gpio_internal_data, actions):
             act_m_back_l(gpio_internal_data, dc)
             act_m_back_r(gpio_internal_data, dc)
         elif action is Actions.pivot_l:
-            act_m_back_r(gpio_internal_data, dc)
+            # act_m_pivot_l(gpio_internal_data, dc)
+            # act_m_back_r(gpio_internal_data, dc)
             act_m_forward_l(gpio_internal_data, dc)
         elif action is Actions.pivot_r:
-            act_m_back_l(gpio_internal_data, dc)
+            # act_m_back_l(gpio_internal_data, dc)
             act_m_forward_r(gpio_internal_data, dc)
         elif action is Actions.steer_l:
             steer, dc = action_data[1]
@@ -143,6 +144,9 @@ def act_m_forward_l(gpio_internal_data, duty_cycle):
 
 def act_m_forward_r(gpio_internal_data, duty_cycle):
     io_pins.motor_forward_r(gpio_internal_data, duty_cycle)
+
+def act_m_pivot_l(gpio_internal_data, duty_cycle):
+    io_pins.motor_pivot_l(gpio_internal_data, duty_cycle)
 
 def act_lift_collector():
     '''

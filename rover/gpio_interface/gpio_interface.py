@@ -26,3 +26,6 @@ def motor_back_r(internal_data, duty_cycle):
 
 def motor_back_l(internal_data, duty_cycle):
     impl.motor_back_l_impl(internal_data, duty_cycle)
+
+def motor_pivot_l(internal_data, duty_cycle):
+    impl.motor_pivot_l_impl(internal_data, duty_cycle)

@@ -51,8 +51,10 @@ def camera_start(video_stream, iso):
         video_stream.start()
     else:
         video_stream.start()
-        
         camera = video_stream.stream.camera
+
+        # camera.awb_mode = 'off'
+        # camera.awb_gains = (1.4, 1.5)
 
         # Set ISO to the desired value
         camera.iso = iso
@@ -65,7 +67,7 @@ def camera_start(video_stream, iso):
         g = camera.awb_gains
         camera.awb_mode = 'off'
         camera.awb_gains = g
-        actual_res = cam_res
+        actual_res = camera.resolution
 
     return video_stream, actual_res
 
