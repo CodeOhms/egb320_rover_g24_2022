@@ -364,13 +364,21 @@ def _vision_sys_sync_impl():
     depths = [[ ] for x in range(num_classes)]
     for cl_i, bboxs in enumerate(bound_boxes):
         for bound_box in bboxs:
+            # Centre bearing:
             cx = bound_box[0] + bound_box[2]//2 # x + width/2
             cy = bound_box[1] + bound_box[3]//2 # y + height/2
             scaled_cen = (cx*f_scale,cy*f_scale)
             contours_imgs[cl_i] = cv.circle(contours_imgs[cl_i], scaled_cen, radius=2, color=(0, 0, 255), thickness=-1)
             cen_x[cl_i].append(cx)
-            bearing = (cx-f_width/2)/f_width*fov[0]
-            bearings[cl_i].append(bearing)
+            cen_bearing = x_px_to_horz_bearing(cx, f_width, fov[0])
+            
+            # Bearings of the left and right sides:
+            lx = bound_box[0] # x
+            rx = bound_box[0] + bound_box[2] # x + width
+            lb = x_px_to_horz_bearing(lx, f_width, fov[0])
+            rb = x_px_to_horz_bearing(rx, f_width, fov[0])
+            
+            bearings[cl_i].append( (cen_bearing, lb, rb) )
 
             if obj_actual_heights[cl_i] != None:
                 obj_px_height = bound_box[3]
@@ -382,7 +390,7 @@ def _vision_sys_sync_impl():
                 depths[cl_i].append(obj_distance)
 
                 cv.putText(
-                    contours_imgs[cl_i], "B: "+str(bearing),
+                    contours_imgs[cl_i], "B: "+str(cen_bearing),
                     scaled_cen, font, 0.3, (255,255,255), 1, cv.LINE_AA
                 )
                 cv.putText(
@@ -396,3 +404,6 @@ def _vision_sys_sync_impl():
     prev_frame_time = new_frame_time
 
     return (contours_imgs, bearings, depths)
+
+def x_px_to_horz_bearing(x_px, f_width, fov_hor):
+    return (x_px-f_width/2)/f_width*fov_hor

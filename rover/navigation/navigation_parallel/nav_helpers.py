@@ -164,7 +164,7 @@ class PF(object):
 #         compiled_PF = compiled_PF + [PF_value]
 #     return compiled_PF
 
-def navigate_pf(mh_pf):
+def navigate_pf(mh_pf, actions_q):
     pf_steer = mh_pf.get_steer() # Bearing to aim for!
     print('pf_steer', pf_steer)
     print()
@@ -262,13 +262,19 @@ def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
         actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
         print('Target ' + str(target) + ' lost!')
         return None
+    print('bearings', bearings)
+    print('distances', distances)
     for h_i in [2, 3, 4, 5]:
         #classifies all non targets as hazards
+        print('h_i', h_i, 'target_i', target_i)
         if h_i == target_i:
             continue
         else:
-            haz_bear_tuples.append(bearings[h_i])
-            haz_dist_tuples.append(distances[h_i])
+            haz_b = bearings[h_i]
+            haz_d = distances[h_i]
+            if len(haz_b) > 0 or len(haz_d) > 0: 
+                haz_bear_tuples.append(haz_b)
+                haz_dist_tuples.append(haz_d)
     # Close enough?:
     for dist in targ_dist_tuples:
         if dist <= stopping_distance:
@@ -283,7 +289,7 @@ def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
         targ_dist_tuples = tuple(targ_dist_tuples)
         haz_bear_tuples = tuple(haz_bear_tuples)
         haz_dist_tuples = tuple(haz_dist_tuples)
-        print('haz_bear_tuples', haz_bear_tuples)
+        print('haz_bear_tuples', haz_bear_tuples, 'haz_dist_tuples', haz_dist_tuples)
         print()
         targ_pf.gen_potential_field((targ_bear_tuples), (targ_dist_tuples))
         haz_pf.gen_potential_field((haz_bear_tuples), (haz_dist_tuples))
