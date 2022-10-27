@@ -1,7 +1,7 @@
 from vision.vision_sync.vision_sync_impl import *
 
-def init_impl(cam_res):
-    return init_sync_impl(cam_res)
+def init_impl(use_picam, cam_res):
+    return init_sync_impl(use_picam, cam_res)
 
 def start_impl(video_stream, iso):
     return start_sync_impl(video_stream, iso)

@@ -1,5 +1,5 @@
 import copy
-from queue import Queue
+from multiprocessing import Queue
 import numpy as np
 import numexpr as ne
 import cv2 as cv
@@ -8,6 +8,8 @@ from scipy.spatial.distance import cdist
 from vision.camera_input.cam_input import *
 
 video_stream = None
+cam_res = None
+resolution = None
 frame_queue = None
 vision_queue = None
 bearings_q = None
@@ -16,12 +18,19 @@ distances_q = None
 f_scale = 4
 f_height, f_width = (0, 0)
 
+# For Pi camera v2.1:
+# fov = (62.2, 48.8) # degrees
+# focal_len = 3.04e-1 # cm
+# px_height = 1.12e-4 # cm/px
+# native_ver_px_height = 2464 # px
+# For Logitech webcam:
 fov = (62.2, 48.8) # degrees
-focal_len = 3.04e-1 # cm
-px_height = 1.12e-4 # cm
+focal_len = 3.08e-1 # cm
+px_height = 0.00017097701149425287 # cm/px
+native_ver_px_height = 960 # px
 res_ver_scale = 0
 
-obj_actual_heights = (None, None, 4.3, 15, 7, 4.5) # cm. Wall and floor, sample, obstacle, rock, lander
+obj_actual_heights = (None, None, 4.25, 15, 7, 4.5) # cm. Wall and floor, sample, obstacle, rock, lander
 
 # # Setup camera undistort coefficients:
 # mtx, distortion = load_coefficients('calibration_charuco.yml')
@@ -47,7 +56,7 @@ regions_properties = [16, 8, 0, 0] # n_cells_x, n_cells_y, size_x, size_y
 prev_frame_time = 0
 new_frame_time = 0
 
-def init_sync_impl(cam_res):
+def init_sync_impl(use_picam, cam_res):
     global f_height
     global f_width
     global video_stream
@@ -57,17 +66,16 @@ def init_sync_impl(cam_res):
     global regions_properties
     global bearings_q
     global distances_q
+    global resolution
 
-    f_height, f_width = (cam_res[1], cam_res[0])
-    res_ver_scale = 2464/f_height
-    regions_shape = [f_width//regions_properties[0], f_height//regions_properties[1]]
-    regions_properties[2:] = regions_shape
-    regions_properties = tuple(regions_properties)
+    # f_height, f_width = (cam_res[1], cam_res[0])
+    resolution = cam_res
 
-    vid_s = init_video_stream(cam_res)
+    vid_s = init_video_stream(use_picam, cam_res)
     f_fifo_q = Queue()
     vis_fifo_q = Queue()
-    video_stream = copy.copy(vid_s)
+    video_stream = vid_s
+    # video_stream = copy.copy(vid_s)
     frame_queue = f_fifo_q
     vision_queue = vis_fifo_q
     bearings_q = Queue()
@@ -108,10 +116,32 @@ def start_sync_impl(video_stream, iso):
     use the shared FIFO buffer for the as the parallel implementations.
     '''
     
-    return camera_start(video_stream, iso)
+    global f_height
+    global f_width
+    global frame_queue
+    global vision_queue
+    global res_ver_scale
+    global regions_properties
+    global f_height
+    global f_width
+    global cam_res
+    global resolution
+    
+    _, cam_res = camera_start(video_stream, iso)
+    print('cam_res', cam_res)
+    # f_height, f_width = (resolution[1], resolution[0])
+    # f_width, f_height = resolution
+    f_height, f_width = resolution
+    res_ver_scale = native_ver_px_height/f_height
+    regions_shape = [f_width//regions_properties[0], f_height//regions_properties[1]]
+    regions_properties[2:] = regions_shape
+    regions_properties = tuple(regions_properties)
+    
+    return video_stream, resolution
 
 def close_sync_impl(video_stream):
     video_stream.stop()
+    print('Cam closed')
     cv.destroyAllWindows()
 
 def get_frame_sync_impl(f_q):
@@ -119,9 +149,6 @@ def get_frame_sync_impl(f_q):
     global vision_queue
     global bearings_q
     global distances_q
-    
-    #print('bearings_q', bearings_q)
-    #print()
 
     frame = get_frame(video_stream)
     f_q.put(frame) # Put on queue so that it can be processed later,
@@ -170,9 +197,6 @@ def get_bearings_sync_impl(bears_q):
     return ret
 
 def get_bearings_sync_impl_(bears_q):
-    print('bears_q size', bears_q.qsize())
-    print()
-    
     ret = None
     try:
         ret = bears_q.get(block=False)
@@ -257,6 +281,8 @@ def _vision_sys_sync_impl():
     
 # Capture frame from camera:
     frame = frame_queue.get()
+    if frame.shape[:2] != resolution:
+        frame = cv.resize(frame, resolution)
     # frame = grab_frame(capture, cam_res)
     # frame_dist = grab_frame(capture, (3240,2464))
     # frame_dist = cv.resize(frame_dist, cam_res)
@@ -265,7 +291,8 @@ def _vision_sys_sync_impl():
     # frame = cv.remap(frame_dist, mapx, mapy, cv.INTER_LINEAR)
 
 # Setup display images:
-    masks_shape = np.concatenate((frame.shape[:2], np.array([num_classes])))
+    masks_shape = np.concatenate(((f_width, f_height), np.array([num_classes])))
+    # masks_shape = np.concatenate((frame.shape[:2], np.array([num_classes])))
     masks_hue = np.zeros(masks_shape, dtype=np.uint8)
     masks_sat = np.zeros(masks_shape, dtype=np.uint8)
     masks_objs = np.zeros(masks_shape, dtype=np.uint8)
@@ -349,6 +376,9 @@ def _vision_sys_sync_impl():
                 obj_px_height = bound_box[3]
                 obj_height = obj_px_height*px_height*res_ver_scale
                 obj_distance = obj_actual_heights[cl_i]*focal_len/obj_height
+                # Manual calc. of px_height for Logitech webcam:
+                # (obj_actual_height/obj_distance) * focal_len * 1/(obj_px_height*res_ver_scale)
+                # 7.975[cm] * 4.25[cm]/0.308[cm] * 1/(58[px]*16) = 0.11858258928571428571[cm/px]
                 depths[cl_i].append(obj_distance)
 
                 cv.putText(

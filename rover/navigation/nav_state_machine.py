@@ -15,6 +15,7 @@ class NavSMachine(StateMachine):
     start = initialising.to(find)
     cont_find = find.to(find)
     approach_target = find.to(approach)
+    refind_target = approach.to(find) # Lost sight of target!
     cont_approach = approach.to(approach)
     obtain_sample = approach.to(collect)
     find_lander = collect.to(find)
@@ -76,6 +77,9 @@ class NavSMachine(StateMachine):
     def on_enter_approach(self):
         self.func_impls.on_enter_approach()
     
+    def on_enter_collect(self):
+        self.func_impls.on_enter_collect()
+    
     def on_enter_done(self):
         '''
         Clean up after navigation state machine.
@@ -85,9 +89,6 @@ class NavSMachine(StateMachine):
     # Function run on state exit:
     def on_exit_initialising(self):
         self.func_impls.on_exit_initialising()
-    
-    def on_exit_approach(self):
-        self.func_impls.on_exit_approach()
     
     def on_exit_done(self):
         self.func_impls.on_exit_done()

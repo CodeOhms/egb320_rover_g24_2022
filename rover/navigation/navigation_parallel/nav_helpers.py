@@ -1,3 +1,5 @@
+import time
+import numpy as np
 from enum import Enum
 from mobility.mobility_enums import *
 from mobility import mobility as mob
@@ -164,6 +166,8 @@ class PF(object):
 
 def navigate_pf(mh_pf):
     pf_steer = mh_pf.get_steer() # Bearing to aim for!
+    print('pf_steer', pf_steer)
+    print()
     dc = None # Use default steering duty cycle.
     steer_args = (pf_steer, dc)
     if pf_steer < 0:
@@ -195,9 +199,9 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
     
     found_targ = None
 
-    bearings = vis_get_bearings(bearings_q)
-    distances = vis_get_distances(distances_q)
-    if bearings is None or distances is Nones:
+    bearings = vis_get_bearings()
+    distances = vis_get_distances()
+    if bearings is None or distances is None:
         #print('Bearings is NONE type!')
         #print()
         return found_targ
@@ -230,52 +234,105 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
 def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
     bearings = vis_get_bearings()
     distances = vis_get_distances()
+    if bearings is None or distances is None:
+        return False # Empty queues...
+    
+    stopping_distance = 7.0     #default until check function can be implemented
     
     target_i = None # Target indicies in bearings and distances.
     if target == Targets.sample:
-        target_i = [2]
+        target_i = 2
+        stopping_distance = 7.0
     elif target == Targets.rock:
-        target_i = [4]
+        target_i = 4
+        stopping_distance = 3.0
     elif target == Targets.lander:
-        target_i = [5]
+        target_i = 5
+        stopping_distance = 2.0
     else:
         raise("Expected either Targets.sample or Targets.lander for the `target` argument!")
     
-    targ_bear = None
-    targ_dist = None
-    for t_i in target_i:
-        targ_bear_list = bearings[t_i]
-        targ_dist_list = distances[t_i]
-        if len(targ_bear_list) < 1 and len(targ_dist_list) < 1:
-            actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
-            print('Target ' + str(target) + ' lost!')
-            break
+    targ_bear_tuples = None
+    targ_dist_tuples = None
+    haz_bear_tuples = [ ]
+    haz_dist_tuples = [ ]
+    targ_bear_tuples = bearings[target_i]
+    targ_dist_tuples = distances[target_i]
+    if len(targ_bear_tuples) < 1 and len(targ_dist_tuples) < 1:
+        actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
+        print('Target ' + str(target) + ' lost!')
+        return None
+    for h_i in [2, 3, 4, 5]:
+        #classifies all non targets as hazards
+        if h_i == target_i:
+            continue
         else:
-            # Close enough?:
-            if targ_dist <= 7.0:
-                actions_q.put( ((Actions.m_halt,),) ) # Close it! Stop!
-            else:
-                # No, approach...
-                    # Create potential fields:
-                targ_pf = PF(target_potential_field)
-                haz_pf = PF(hazard_potential_field)
-                
-                targ_pf.gen_potential_field((-90.0, 90), (0.6, 0.5))
-                haz_pf.gen_potential_field(((-80, -20), (-10, 10), (60, 110)), (0.8, 0.2, 0.8))
-                motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
-                
-                    # Navigate with potential fields:
-                navigate_pf(motor_heading_pf)
-            
-            
-            # PF = create_potential_field(2)
-            # steering = navigate_PF(PF)
-            
-            # # Is it close enough to interact with?:
-            # if max(PF) > pf_max:
-            #     # Make sure target aligned decently:
-            #     if steering < 4 && steering > -4:
-            #         nx_st_cb = (nav_smachine.obtain_sample, None)
-            # else:
-            #     nx_st_cb = (nav_smachine.cont_approach, None)
-                   
+            haz_bear_tuples.append(bearings[h_i])
+            haz_dist_tuples.append(distances[h_i])
+    # Close enough?:
+    for dist in targ_dist_tuples:
+        if dist <= stopping_distance:
+            actions_q.put( ((Actions.m_halt,),) ) # Close to it! Stop!
+            return True
+    else:
+        # No, approach...
+            # Create potential fields:
+        targ_pf = PF(target_potential_field)
+        haz_pf = PF(hazard_potential_field)
+        targ_bear_tuples = tuple(targ_bear_tuples)
+        targ_dist_tuples = tuple(targ_dist_tuples)
+        haz_bear_tuples = tuple(haz_bear_tuples)
+        haz_dist_tuples = tuple(haz_dist_tuples)
+        print('haz_bear_tuples', haz_bear_tuples)
+        print()
+        targ_pf.gen_potential_field((targ_bear_tuples), (targ_dist_tuples))
+        haz_pf.gen_potential_field((haz_bear_tuples), (haz_dist_tuples))
+        motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
+        
+            # Navigate with potential fields:
+        navigate_pf(motor_heading_pf, actions_q)
+        return False
+
+def collecting_sample(target, vis_get_distances, actions_q):
+    # # Move claw down, and stop:
+    # actions_q.put( ((Actions.m_halt,), (Actions.claw_down,)) )
+    
+    target_i = None
+    if target == Targets.sample:
+        target_i = 2
+    elif target == Targets.rock:
+        target_i = 4
+    elif target == Targets.lander:
+        target_i = 5
+    else:
+        raise("Expected either Targets.sample or Targets.lander for the `target` argument!")
+    
+    # Move forward a bit:
+    distances_tuples = vis_get_distances()
+    while(distances_tuples is None):
+        distances_tuples = vis_get_distances()
+    distance = distances_tuples[target_i]
+    actions_q.put( (('forward', 40),) )
+    time.sleep(0.2*distance[0])
+    
+    # Lift sample, hopefully:
+    actions_q.put( ((Actions.claw_lift,), (Actions.m_halt,)) )
+    time.sleep(0.5) # Allow ball to roll, if fumbled.
+    
+    # Did the ball roll far?:
+    while(distances_tuples is None):
+        distances_tuples = vis_get_distances()
+    distance = distances_tuples[target_i]
+    print(distance)
+    if(distance[0] <= 15 and distance[0] >= 2.0):
+        # Rolled away!
+        return False
+    else:
+        # Got it!
+        return True
+
+def fliping_rock():
+    pass
+
+def boarding_lander():
+    pass

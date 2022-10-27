@@ -12,8 +12,8 @@ def init_impl():
     # in2 yellow
     # in3 dark purple
     # in4 gray
-    m_driver_in_1 = 27
-    m_driver_in_2 = 22
+    m_driver_in_1 = 22
+    m_driver_in_2 = 27
     m_driver_in_3 = 18
     m_driver_in_4 = 17
     # m_driver_in_1 = 14
