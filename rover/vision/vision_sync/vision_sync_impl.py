@@ -39,12 +39,18 @@ obj_actual_heights = (None, None, 4.25, 15, 7, 4.5) # cm. Wall and floor, sample
 
 num_classes = 6 # Wall and floor, sample, obstacle, rock, lander
 
-sat_mids = (0.64, 0, 0.65, 0.45, 0.95, 1.0)
+sat_mids = (0.50, 0, 0.65, 0.26, 0.95, 1.0)
 # Hues (in degrees): 180, 220, 2, 110, 207
 hue_mids = (
-    1.71042266695444298539, 3.14159265358979323846, 0.03490658503988659154,
-    1.65806278939461309808, 3.56047167406843233692, 1.04719755119659774615
+    1.81514242207410276, 3.14159265358979323846, 0.03490658503988659154,
+    1.53588974175501002769, 3.56047167406843233692, 1.04719755119659774615
 ) # Wall and floor, sample, obstacle, rock, lander
+# sat_mids = (0.26, 0, 0.65, 0.50, 0.95, 1.0)
+# # Hues (in degrees): 180, 220, 2, 110, 207
+# hue_mids = (
+#     1.53588974175501002769, 3.14159265358979323846, 0.03490658503988659154,
+#     1.81514242207410276, 3.56047167406843233692, 1.04719755119659774615
+# ) # Wall and floor, sample, obstacle, rock, lander
 sat_hue_cnums = ne.evaluate('sat_mids*exp(complex(0,hue_mids))')
 sat_hue_vecs = np.array([[hsm_comp.real, hsm_comp.imag] for hsm_comp in sat_hue_cnums])
 

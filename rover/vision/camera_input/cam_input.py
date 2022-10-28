@@ -53,6 +53,7 @@ def camera_start(video_stream, iso):
         video_stream.start()
         camera = video_stream.stream.camera
 
+        # camera.exposure_mode = 'off'
         # camera.awb_mode = 'off'
         # camera.awb_gains = (1.4, 1.5)
 

@@ -19,7 +19,7 @@ def init(use_picam=True, cam_res=(64, 32)):
     # cam_res=(80, 60)
     video_stream, frame_queue, vision_queue, bearings_q, distances_q = impl.init_impl(use_picam, cam_res)
 
-def start(iso=600):
+def start(iso=950):
     global video_stream
     global actual_res
     

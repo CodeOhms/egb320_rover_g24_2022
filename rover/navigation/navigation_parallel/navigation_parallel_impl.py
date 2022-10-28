@@ -98,6 +98,7 @@ class NavSMachine_impl(object):
         self.nav_internal_data = None
         self.nxt_st_cb = (None, None) # 1st index is the callback, 2nd are the args
         self.target = Targets.sample
+        self.do_pivot_l = True
     
     def set_nav_internal_data(self, nav_internal_data):
         self.nav_internal_data = nav_internal_data
@@ -190,6 +191,7 @@ class NavSMachine_impl(object):
         distances_q = self.nav_internal_data.distances_q
         vis_get_bearings = self.nav_internal_data.vis_get_bearings
         vis_get_distances = self.nav_internal_data.vis_get_distances
+        do_pivot_l = self.do_pivot_l
         
         #print('Entered find state')
         #print()
@@ -229,7 +231,7 @@ class NavSMachine_impl(object):
         # Make sure claw is not in the way (i.e. lifted):
         # actions_q.put( ((Actions.claw_up,),) )
         
-        target = finding_target(self.target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q)
+        target = finding_target(self.target, self.do_pivot_l, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q)
         #print('target', target)
         #print()
         if target is None:
@@ -249,6 +251,9 @@ class NavSMachine_impl(object):
         #print()
     
     def on_enter_approach(self):
+        print('Enter approach state')
+        print()
+        
         nav_smachine = self.nav_internal_data.nav_smachine
         actions_q = self.nav_internal_data.actions_q
         vis_get_bearings = self.nav_internal_data.vis_get_bearings
@@ -258,6 +263,7 @@ class NavSMachine_impl(object):
         if close_to_target is None:
             print('Target lost! Going back to find state!')
             print()
+            self.do_pivot_l = not self.do_pivot_l # Toggle pivot direction.
             self.set_next_state_callback(nav_smachine.refind_target)
         elif close_to_target:
             self.set_next_state_callback(nav_smachine.obtain_sample)

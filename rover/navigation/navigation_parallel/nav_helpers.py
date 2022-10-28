@@ -12,6 +12,8 @@ def target_potential_field(x_array, bearings, intensity, intensity_max):
     Piecewise triangular function.
     '''
     
+    print('Bearings in tpf')
+    print()
     g_pf_total = np.zeros_like(x_array)
     m = intensity_max/x_array.max() # Gradients
     for i, bear in enumerate(bearings):
@@ -165,6 +167,9 @@ class PF(object):
 #     return compiled_PF
 
 def navigate_pf(mh_pf, actions_q):
+    print('POTENTIAL FIELD NAVIGATOR')
+    print()
+    
     pf_steer = mh_pf.get_steer() # Bearing to aim for!
     print('pf_steer', pf_steer)
     print()
@@ -186,7 +191,7 @@ class Targets(Enum):
     lander = 5
     sample_and_lander = 6
 
-def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q):
+def finding_target(target, do_pivot_l, vis_get_bearings, vis_get_distances, actions_q, bearings_q, distances_q):
     '''
     Find either targets by priorty, or the target specified.
 
@@ -204,7 +209,7 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
     if bearings is None or distances is None:
         #print('Bearings is NONE type!')
         #print()
-        return found_targ
+        return None
 
     target_i = None # Target indicies in bearings and distances.
     if target == Targets.sample:
@@ -223,7 +228,10 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
         targ_bear = bearings[t_i]
         targ_dist = distances[t_i]
         if len(targ_bear) == 0 and len(targ_dist) == 0:
-            actions_q.put( ((Actions.pivot_l,),) ) # Keep looking...
+            if do_pivot_l:
+                actions_q.put( ((Actions.pivot_l,),) ) # Keep looking...
+            else:
+                actions_q.put( ((Actions.pivot_r,),) )
         else:
             actions_q.put( ((Actions.m_halt,),) ) # Found it! Stop!
             found_targ = Targets(t_i)
@@ -234,7 +242,10 @@ def finding_target(target, vis_get_bearings, vis_get_distances, actions_q, beari
 def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
     bearings = vis_get_bearings()
     distances = vis_get_distances()
+    print('bearings', bearings)
+    print('distances', distances)
     if bearings is None or distances is None:
+        print('Empty....')
         return False # Empty queues...
     
     stopping_distance = 7.0     #default until check function can be implemented
@@ -262,47 +273,52 @@ def approaching_target(target, vis_get_bearings, vis_get_distances, actions_q):
         actions_q.put( ((Actions.m_halt,),) ) # Lost it! Stop!
         print('Target ' + str(target) + ' lost!')
         return None
-    print('bearings', bearings)
-    print('distances', distances)
+    # print('bearings', bearings)
+    # print('distances', distances)
     for h_i in [2, 3, 4, 5]:
         #classifies all non targets as hazards
-        print('h_i', h_i, 'target_i', target_i)
+        # print('h_i', h_i, 'target_i', target_i)
         if h_i == target_i:
             continue
         else:
             haz_b = bearings[h_i][:2]
             haz_d = distances[h_i]
-            print('haz_b', bearings[h_i], 'haz_d', haz_d)
+            # print('haz_b', bearings[h_i], 'haz_d', haz_d)
             if len(haz_b) > 0 or len(haz_d) > 0:
                 haz_dist_tuples.append(haz_d)
                 for h_b in haz_b:
-                    print(h_b[:2])
+                    # print(h_b[:2])
                     haz_bear_tuples.append(h_b[:2])
             else:
                 return False
+    print('targ_bear_tuples', targ_bear_tuples)
+    print('haz_bear_tuples', haz_bear_tuples, 'haz_dist_tuples', haz_dist_tuples)
+    print()
     # Close enough?:
     for dist in targ_dist_tuples:
+        # print('dist', dist)
+        # print()
         if dist <= stopping_distance:
             actions_q.put( ((Actions.m_halt,),) ) # Close to it! Stop!
             return True
-    else:
-        # No, approach...
-            # Create potential fields:
-        targ_pf = PF(target_potential_field)
-        haz_pf = PF(hazard_potential_field)
-        targ_bear_tuples = tuple(targ_bear_tuples)
-        targ_dist_tuples = tuple(targ_dist_tuples)
-        haz_bear_tuples = tuple(haz_bear_tuples)
-        haz_dist_tuples = tuple(haz_dist_tuples)
-        print('haz_bear_tuples', haz_bear_tuples, 'haz_dist_tuples', haz_dist_tuples)
-        print()
-        targ_pf.gen_potential_field((targ_bear_tuples), (targ_dist_tuples))
-        haz_pf.gen_potential_field((haz_bear_tuples), (haz_dist_tuples))
-        motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
-        
-            # Navigate with potential fields:
-        navigate_pf(motor_heading_pf, actions_q)
-        return False
+    
+    print('Far')
+    print()
+    # No, approach...
+        # Create potential fields:
+    targ_pf = PF(target_potential_field)
+    haz_pf = PF(hazard_potential_field)
+    targ_bear_tuples = tuple(targ_bear_tuples)
+    targ_dist_tuples = tuple(targ_dist_tuples)
+    haz_bear_tuples = tuple(haz_bear_tuples)
+    haz_dist_tuples = tuple(haz_dist_tuples)
+    targ_pf.gen_potential_field(targ_bear_tuples, targ_dist_tuples)
+    haz_pf.gen_potential_field(haz_bear_tuples, haz_dist_tuples)
+    motor_heading_pf = PF.init_heading_field(targ_pf, haz_pf)
+    
+        # Navigate with potential fields:
+    navigate_pf(motor_heading_pf, actions_q)
+    return False
 
 def collecting_sample(target, vis_get_distances, actions_q):
     # # Move claw down, and stop:
