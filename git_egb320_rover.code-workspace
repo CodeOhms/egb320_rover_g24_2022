@@ -6,6 +6,10 @@
 		{
 			"name": "RPi:~/programming/egb320_rover_g24_2022",
 			"uri": "ponyssh:/RPi/~/programming/egb320_rover_g24_2022"
+		},
+		{
+			"name": "RPi_hotspot:~/programming/egb320_rover_g24_2022",
+			"uri": "ponyssh:/RPi_hotspot/~/programming/egb320_rover_g24_2022"
 		}
 	],
 	"settings": {}

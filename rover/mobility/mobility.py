@@ -1,7 +1,12 @@
+from mobility.mobility_enums import *
 import mobility.mobility_impl as impl
+from mobility.mobility_helpers import pivot_left    
+
+mobility_q = None
 
 def init():
-    impl.init_impl()
+    global mobility_q
+    mobility_q = impl.init_impl()
 
 def start():
     impl.start_impl()
@@ -9,14 +14,11 @@ def start():
 def close():
     impl.close_impl()
 
-def act_on(decision):
-    impl.act_on_impl(decision)
+def get_mobility_queue():
+    return mobility_q
 
-def collect_sample():
-    impl.collect_sample()
+# def act_on(actions):
+#     impl.act_on_impl(actions)
 
-def turn_left():
-    pass
-
-def turn_right():
-    pass
+# def collect_sample():
+#     impl.collect_sample()
